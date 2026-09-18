@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1c1f26">
 <title>Deal Matcher</title>
 <style>
-.card input,.card select{border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:var(--card);width:100%}
+.card input,.card select{border:1px solid var(--line);border-radius:6px;padding:11px 12px;background:var(--card);width:100%;font-size:17px}
 :root{
   --ink:#1c1f26;--ink2:#4b5160;--mute:#8a8f9c;--line:#e3e5ea;--bg:#f6f6f4;--card:#fff;
   --tag:#ffd84d;--tag-ink:#1c1f26;--amber:#c77700;--amber-bg:#fff4e0;
@@ -52,7 +52,7 @@ section[hidden]{display:none}
 /* list editing */
 .add{display:flex;gap:8px;margin:6px 0 14px}
 .add input{flex:1;border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:10px 12px}
-.btn{border:1px solid var(--ink);border-radius:var(--r);padding:9px 14px;font-weight:600;background:var(--ink);color:#fff}
+.btn{border:1px solid var(--ink);border-radius:var(--r);padding:11px 16px;font-weight:600;font-size:17px;background:var(--ink);color:#fff}
 .btn.q{background:var(--card);color:var(--ink);border-color:var(--line)}
 .btn.s{padding:6px 10px;font-size:13px}
 .iconb{color:var(--mute);font-size:20px;line-height:1;padding:4px 8px}
@@ -91,12 +91,12 @@ section[hidden]{display:none}
 .empty{color:var(--ink2);font-size:14px;padding:18px 4px}
 /* data tab */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:14px;margin-bottom:12px}
-.card h2{font-size:16px;margin:0 0 6px}
-.card p{margin:6px 0;font-size:14px;color:var(--ink2)}
-.card code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:13px}
+.card h2{font-size:20px;margin:0 0 8px}
+.card p{margin:8px 0;font-size:17px;line-height:1.5;color:var(--ink)}
+.card code{background:var(--bg);padding:1px 5px;border-radius:3px;font-size:16px}
 .stack{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.card p b{color:var(--ink)}.card details{margin-top:6px}.card summary{list-style:none}.card summary::before{content:'▸ ';}.card details[open] summary::before{content:'▾ '}
-@media (min-width:700px){html,body{font-size:18px}.app{max-width:820px;padding-bottom:100px}.tag .price{font-size:34px}.tag .why,.deal .r,.ck .d,.sub{font-size:16px}.tabs{position:sticky;bottom:0}}
+.card p b{color:var(--ink)}.card details{margin-top:6px}.card summary{list-style:none;font-size:17px;color:var(--ink)}.card summary::before{content:'▸ ';}.card details[open] summary::before{content:'▾ '}
+@media (min-width:700px){html,body{font-size:18px}.app{max-width:820px;padding-bottom:100px}.tag .price{font-size:34px}.tag .why,.deal .r,.ck .d,.sub{font-size:16px}.card p,.card summary,.card input,.card select{font-size:18px}.card h2{font-size:22px}.tabs{position:sticky;bottom:0}}
 @media (prefers-reduced-motion:no-preference){.best{transition:transform .15s}.row:hover .best{transform:rotate(0)}}
 </style>
 </head>
@@ -139,7 +139,7 @@ section[hidden]{display:none}
   <div class="card"><h2>Your shopping list</h2><p id="listInfo"></p>
     <p><b>Adding items:</b> type one item at a time on the List tab, or paste a whole list below (one item per line — copied from Notes, a text, or another app) and press Add pasted lines. Category headings like PRODUCE are skipped automatically.</p>
     <p><b>Getting better matches:</b> tap the pencil ✎ next to an item and add a keyword or two, like <i>boneless</i> or <i>80% lean</i>. When more than one deal fits, the app shows a "choose" list under the item so you can pick the right one; it remembers your pick.</p>
-    <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:8px;font:inherit" placeholder="ground beef&#10;eggs&#10;paper towels"></textarea>
+    <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:10px;font:inherit;font-size:17px" placeholder="ground beef&#10;eggs&#10;paper towels"></textarea>
     <div class="stack"><button class="btn q" id="pasteAdd">Add pasted lines</button><button class="btn q" id="exportList">Download list.json</button><label class="btn q">Load list.json<input type="file" id="listFile" accept=".json" hidden></label><button class="btn q" id="clearChecks">Uncheck everything</button></div>
     <p><b>Moving your list to another device:</b> Download list.json here, send the file to yourself, then Load list.json on the other device. Your list does not sync on its own.</p>
   </div>
