@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#1c1f26">
 <title>Deal Matcher</title>
 <style>
+.card input,.card select{border:1px solid var(--line);border-radius:6px;padding:9px 10px;background:var(--card);width:100%}
 :root{
   --ink:#1c1f26;--ink2:#4b5160;--mute:#8a8f9c;--line:#e3e5ea;--bg:#f6f6f4;--card:#fff;
   --tag:#ffd84d;--tag-ink:#1c1f26;--amber:#c77700;--amber-bg:#fff4e0;
@@ -94,6 +95,7 @@ section[hidden]{display:none}
 .card p{margin:6px 0;font-size:14px;color:var(--ink2)}
 .card code{background:var(--bg);padding:1px 4px;border-radius:3px;font-size:13px}
 .stack{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.card p b{color:var(--ink)}.card details{margin-top:6px}.card summary{list-style:none}.card summary::before{content:'▸ ';}.card details[open] summary::before{content:'▾ '}
 @media (min-width:700px){html,body{font-size:18px}.app{max-width:820px;padding-bottom:100px}.tag .price{font-size:34px}.tag .why,.deal .r,.ck .d,.sub{font-size:16px}.tabs{position:sticky;bottom:0}}
 @media (prefers-reduced-motion:no-preference){.best{transition:transform .15s}.row:hover .best{transform:rotate(0)}}
 </style>
@@ -122,22 +124,45 @@ section[hidden]{display:none}
 </section>
 
 <section id="t-data" hidden>
-  <div class="card"><h2>Weekly ads</h2><p id="adInfo"></p>
-    <p>Any store works: the app reads store names from the <code>chain</code> column of <code>deals.json</code> and builds the store list, colours, filters and shop sections from that. Add a row for Aldi or Walmart and it just appears. The file is the 16-column schema (an object with <code>schema</code>, <code>ad_weeks</code>, <code>rows</code>) or a plain array of row objects.</p>
-    <div class="stack"><label class="btn q">Load deals.json<input type="file" id="dealsFile" accept=".json,application/json" hidden></label><button class="btn q" id="fetchDeals">Reload from site</button></div>
+  <div class="card"><h2>How this app works</h2>
+    <p>Every week, the ads from our stores are turned into one data file called <code>deals.json</code>. This app reads that file and matches the deals against your shopping list. There is no login and no server: your list, your checkmarks, and your store choices live only on the phone or computer you're using right now.</p>
+    <p><b>The three tabs:</b> <b>List</b> is what you want to buy, with each store's price side by side and a BEST sticker on the cheapest. <b>Deals</b> is everything in this week's ads, searchable. <b>Shop</b> is your list sorted by store, with checkboxes and running totals.</p>
+    <p><b>Reading a price:</b> a solid yellow tag is a price printed in the ad. An amber tag with <b>≤</b> is a ceiling worked out from "save up to" wording — the shelf price may be lower, never higher. <span class="dc">DC</span> means you must clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off with no base price, so nothing can be calculated.</p>
   </div>
-  <div class="card"><h2>Get the raw data</h2><p>Every deal currently loaded, in the 16-column schema. The CSV opens in Excel or Google Sheets; the JSON is the file the app reads.</p>
-    <div class="stack"><button class="btn q" id="dlCsv">Download deals.csv</button><button class="btn q" id="dlJson">Download deals.json</button></div>
+  <div class="card"><h2>This week's ads</h2><p id="adInfo"></p>
+    <details><summary class="sub" style="cursor:pointer">Loading a different file (advanced)</summary>
+      <p>The app loads <code>deals.json</code> from the website automatically. You only need these buttons if you want to try a file on this device without changing what everyone else sees.</p>
+      <p><b>Load deals.json or .csv</b> replaces this week's deals on this device only. The file is checked before it's used; a bad file is rejected and nothing changes. <b>Reload from site</b> throws away anything you loaded and goes back to the shared file. If the app ever shows old prices after an update, press Reload from site first.</p>
+      <div class="stack"><label class="btn q">Load deals.json or .csv<input type="file" id="dealsFile" accept=".json,.csv,application/json,text/csv" hidden></label><button class="btn q" id="fetchDeals">Reload from site</button></div>
+    </details>
   </div>
-  <div class="card"><h2>My stores</h2><p>Untick a store and it disappears from your list, shop totals and best-price picks on this device. Deals tab still shows everything.</p><div class="stack" id="storeToggles"></div></div>
-  <div class="card"><h2>Shopping list</h2><p id="listInfo"></p>
-    <p>Paste a list from another app (one item per line, or America's Test Kitchen's category-grouped copy) and add every line at once.</p>
-    <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:8px;font:inherit"></textarea>
+  <div class="card"><h2>Your shopping list</h2><p id="listInfo"></p>
+    <p><b>Adding items:</b> type one item at a time on the List tab, or paste a whole list below (one item per line — copied from Notes, a text, or another app) and press Add pasted lines. Category headings like PRODUCE are skipped automatically.</p>
+    <p><b>Getting better matches:</b> tap the pencil ✎ next to an item and add a keyword or two, like <i>boneless</i> or <i>80% lean</i>. When more than one deal fits, the app shows a "choose" list under the item so you can pick the right one; it remembers your pick.</p>
+    <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:8px;font:inherit" placeholder="ground beef&#10;eggs&#10;paper towels"></textarea>
     <div class="stack"><button class="btn q" id="pasteAdd">Add pasted lines</button><button class="btn q" id="exportList">Download list.json</button><label class="btn q">Load list.json<input type="file" id="listFile" accept=".json" hidden></label><button class="btn q" id="clearChecks">Uncheck everything</button></div>
+    <p><b>Moving your list to another device:</b> Download list.json here, send the file to yourself, then Load list.json on the other device. Your list does not sync on its own.</p>
   </div>
-  <div class="card"><h2>How prices are labeled</h2>
-    <p><b>Solid yellow tag</b> = a price printed in the ad. <b>≤ amber tag</b> = a ceiling worked out from "save up to" or "regular retail up to" wording; the shelf price may be lower. Shop totals keep these apart as firm vs. estimated.</p>
-    <p><span class="dc">DC</span> means you need to clip the digital coupon in the store app first.</p>
+  <div class="card"><h2>My stores</h2><p>Only shop at one or two of these? Untick the others and they disappear from your List, Shop totals and best-price picks on this device. The Deals tab still shows every store.</p><div class="stack" id="storeToggles"></div></div>
+  <div class="card"><h2>Add a deal the ad didn't have</h2><p>Saw a good price on a shelf, or shop a store nobody parsed? Add it here and it's compared like any other deal. Type a new store name (say, Walmart) and that store simply appears. Store, product and price are required; the rest is optional.</p>
+    <div class="stack" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <input id="adStore" placeholder="Store (e.g. Walmart)" list="storeList"><datalist id="storeList"></datalist>
+      <input id="adName" placeholder="Product" style="grid-column:1/-1">
+      <input id="adSize" placeholder="Size (e.g. 16 oz)">
+      <input id="adPrice" placeholder="Price" inputmode="decimal">
+      <select id="adUnit"><option value="ea">per each</option><option value="lb">per lb</option></select>
+      <input id="adNote" placeholder="Note (e.g. with card, limit 2)">
+    </div>
+    <div class="stack"><button class="btn" id="adAdd">Add deal</button><button class="btn q" id="adClear">Remove my added deals</button></div>
+    <p id="adInfoMine"></p>
+    <p><b>Limits:</b> deals you add stay on this device only — nobody else sees them unless you download the file and send it to whoever updates the website. They survive weekly updates until you press Remove.</p>
+  </div>
+  <div class="card"><h2>Get the raw data</h2><p>Want to see or change the numbers yourself? <b>Download deals.csv</b> opens in Excel or Google Sheets and includes every deal currently loaded, plus any you added. <b>Download deals.json</b> is the same data in the format the app reads.</p>
+    <div class="stack"><button class="btn q" id="dlCsv">Download deals.csv</button><button class="btn q" id="dlJson">Download deals.json</button></div>
+    <p><b>If you edit the spreadsheet and load it back:</b> keep all 16 columns in the same order, don't rename the header row, and save as CSV. Prices are plain numbers (2.99, not $2.99). A blank price means "no price could be calculated" — it is not zero, so don't sum that column without filtering blanks.</p>
+  </div>
+  <div class="card"><h2>What this app can't do</h2>
+    <p>It doesn't know your store's shelf prices — only what the printed ad says, and ads can differ between stores of the same chain. It doesn't sync between devices or people. It doesn't apply store-brand coupons automatically; DC items still need clipping in the store's own app. Matching is by words, so "chicken" will match chicken broth as well as chicken breast — add a keyword or use the choose list. And the ceiling (≤) prices are the most you'd pay, not a quote.</p>
   </div>
 </section>
 </div>
@@ -177,8 +202,9 @@ function normalizeDeals(raw){
   for(const g in prim) if(prim[g]!==1) throw new Error(`deal_group_id ${g} has ${prim[g]} primary rows, expected exactly 1`);
   return {rows:out,weeks};
 }
+let mine=store.get('dm.mine',[]);
 function setDeals(raw,source){
-  const {rows,weeks}=normalizeDeals(raw);deals=rows;adWeeks=weeks;
+  const nz=normalizeDeals(raw);const rows=nz.rows.filter(r=>!String(r.deal_group_id||'').startsWith('MINE-')),weeks=Object.keys(nz.weeks).length?nz.weeks:adWeeks;deals=rows.concat(mine.map((r,i)=>({...r,id:r.deal_group_id,_i:rows.length+i})));adWeeks=weeks;
   store.set('dm.deals',raw);store.set('dm.dealsSource',source);
   renderAll();
 }
@@ -341,7 +367,7 @@ function renderData(){
 }
 function renderStores(){$('#storeToggles').innerHTML=allStores().map(s=>`<label class="btn q" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-store="${esc(s)}" ${stores().includes(s)?'checked':''}>${chip(s)}</label>`).join('')}
 $('#storeToggles').addEventListener('change',e=>{const s=e.target.dataset.store;if(!s) return;const on=allStores().filter(x=>x===s?e.target.checked:stores().includes(x));if(!on.length){e.target.checked=true;return}myStores=on.length===allStores().length?null:on;store.set('dm.stores',myStores);renderList();renderShop();renderData()});
-function renderAll(){fillFilters();renderStores();renderList();renderDeals();renderShop();renderData()}
+function renderAll(){fillFilters();renderStores();renderList();renderDeals();renderShop();renderData();renderMine()}
 
 /* ---------- events ---------- */
 document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>{
@@ -368,11 +394,27 @@ $('#pasteAdd').addEventListener('click',()=>{const n=addItems($('#pasteBox').val
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function toCsv(){const q=v=>{if(v==null)return'';const s=String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   return [SCHEMA.join(','),...deals.map(d=>SCHEMA.map(k=>q(d[k])).join(','))].join('\r\n')}
+function renderMine(){$('#adInfoMine').textContent=mine.length?`${mine.length} deal${mine.length>1?'s':''} added on this device.`:'';$('#storeList').innerHTML=allStores().map(s=>`<option value="${esc(s)}">`).join('')}
+$('#adAdd').addEventListener('click',()=>{const st=$('#adStore').value.trim(),nm=$('#adName').value.trim(),pr=parseFloat($('#adPrice').value);
+  if(!st||!nm||!(pr>0)){alert('Store, product and a price are required.');return}
+  const n=mine.length+1;mine.push({chain:st,product_name:nm,size:$('#adSize').value.trim(),regular_price:null,sale_price:Math.round(pr*100)/100,unit:$('#adUnit').value,deal_type:'sale',coupon_discount:null,digital_coupon_required:false,page:0,computed_unit_price:Math.round(pr*100)/100,price_basis:'printed',deal_group_id:`MINE-${Date.now()}-${n}`,row_role:'primary',restrictions:($('#adNote').value.trim()||'Added by hand.'),section:'Added on this device'});
+  store.set('dm.mine',mine);['adName','adSize','adPrice','adNote'].forEach(i=>$('#'+i).value='');setDeals(store.get('dm.deals',JSON.parse($('#seed').textContent)),store.get('dm.dealsSource','built-in seed'))});
+$('#adClear').addEventListener('click',()=>{if(!mine.length)return;if(!confirm(`Remove ${mine.length} deal(s) you added on this device?`))return;mine=[];store.set('dm.mine',mine);setDeals(store.get('dm.deals',JSON.parse($('#seed').textContent)),store.get('dm.dealsSource','built-in seed'))});
 $('#dlCsv').addEventListener('click',()=>dl('deals.csv','\ufeff'+toCsv(),'text/csv;charset=utf-8'));
 $('#dlJson').addEventListener('click',()=>dl('deals.json',JSON.stringify({schema:SCHEMA,ad_weeks:adWeeks,rows:deals.map(d=>SCHEMA.map(k=>d[k]??null))},null,1),'application/json'));
 $('#exportList').addEventListener('click',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(list,null,2)],{type:'application/json'}));a.download='list.json';a.click()});
 $('#listFile').addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j))throw new Error('list.json must be an array');list=j.map(x=>({n:x.n||x.name||String(x),k:x.k||'',id:x.id||Math.random().toString(36).slice(2)}));saveList();renderAll()}catch(err){alert('Could not load list: '+err.message)}e.target.value=''});
-$('#dealsFile').addEventListener('change',async e=>{const f=e.target.files[0];try{setDeals(JSON.parse(await f.text()),f.name)}catch(err){$('#banner').innerHTML=`<div class="banner bad">${esc(f.name)} was not loaded: ${esc(err.message)}. The previous deals are still in use.</div>`}e.target.value=''});
+function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.replace(/^\ufeff/,'');
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
+    else if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell=''}
+    else cell+=c}
+  if(cell!==''||row.length){row.push(cell);rows.push(row)}
+  const hdr=rows.shift().map(h=>h.trim());if(hdr.join()!==SCHEMA.join())throw new Error('CSV header must be exactly the 16 schema columns in order');
+  const num=v=>v===''?null:Number(v),bool=v=>String(v).toLowerCase()==='true';
+  return rows.filter(r=>r.length>1).map(r=>{const o=Object.fromEntries(SCHEMA.map((k,j)=>[k,r[j]??'']));['regular_price','sale_price','coupon_discount','page','computed_unit_price'].forEach(k=>o[k]=num(o[k]));o.digital_coupon_required=bool(o.digital_coupon_required);['price_basis','deal_group_id'].forEach(k=>{if(o[k]==='')o[k]=null});return o})}
+$('#dealsFile').addEventListener('change',async e=>{const f=e.target.files[0];try{const txt=await f.text();const body=txt.replace(/^\ufeff/,'').trimStart();setDeals(/^[\[{]/.test(body)?JSON.parse(txt):parseCsv(txt),f.name)}catch(err){$('#banner').innerHTML=`<div class="banner bad">${esc(f.name)} was not loaded: ${esc(err.message)}. The previous deals are still in use.</div>`}e.target.value=''});
 $('#fetchDeals').addEventListener('click',fetchSite);
 async function fetchSite(){try{const r=await fetch('deals.json',{cache:'no-store'});if(!r.ok)throw new Error(r.status);setDeals(await r.json(),'deals.json on site');return true}catch{return false}}
 
