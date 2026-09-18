@@ -46,9 +46,11 @@ section[hidden]{display:none}
 .tag .price sup{font-size:14px;vertical-align:top;position:relative;top:4px;margin-left:1px}
 .tag .price .u{font-size:13px;font-weight:600;margin-left:3px}
 .tag .why{font-size:15px;line-height:1.35;margin-top:6px;color:var(--ink)}
+.buytoggle{display:block;width:100%;margin:6px 0 4px;padding:9px 12px;font-size:16px;font-weight:600;border:1px solid var(--ink);border-radius:var(--r);background:#fff;text-align:left}.buytoggle.on{background:var(--ink);color:#fff}
 .buyhere{margin-top:8px;font-size:14px;font-weight:600;padding:5px 10px;border:1px solid var(--ink);border-radius:99px;background:#fff}.buyhere.on{background:var(--ink);color:#fff}
 .tag.ceil .price::before{content:"≤ ";font-size:16px;color:var(--amber);font-weight:700}
 .best{position:absolute;top:-8px;right:-6px;background:var(--bad);color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:99px;transform:rotate(6deg);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.b5{display:inline-block;font-size:12px;font-weight:700;background:#ffd84d;color:#1c1f26;border:1px solid #d4b02a;border-radius:3px;padding:1px 5px;margin-left:4px;white-space:nowrap}
 .dc{display:inline-block;font-size:12px;font-weight:700;background:var(--ink);color:#fff;border-radius:3px;padding:1px 5px;margin-left:4px}
 .flag{font-size:12px;font-weight:700;border-radius:3px;padding:1px 5px;background:#fff;border:1px solid rgba(0,0,0,.15)}
 .tag.ceil .flag{color:var(--amber);border-color:var(--amber)}
@@ -115,26 +117,27 @@ section[hidden]{display:none}
 <div id="banner"></div>
 
 <section id="t-list" hidden>
-  <div class="intro"><b>Compare Deals — each item, every store side by side</b><p>Type an item and pick from the suggestions, or press Add for anything not on sale. Each item shows one price tag per store; <b>BEST</b> marks the cheapest, and that's where it goes on your Shopping List automatically. Want it from a different store? Tap <b>Buy here</b> on that store's tag (tap again to go back to automatic). If several deals fit, a "choose" list appears — tap the right one and the app remembers.</p>
+  <div class="intro"><b>Compare Deals — the items you keep an eye on, every store side by side</b><p>This is your standing list of things you buy: it stays week to week so you can see when they go on sale. Each item shows one price tag per store; <b>BEST</b> marks the cheapest. Nothing here goes on your Shopping List until you tap <b>Buy here</b> on one of its store tags — that adds the item and files it under that store. Tap the same button again to take it off the Shopping List. If several deals fit, a "choose" list appears — pick the right one and the app remembers.</p>
   <details><summary>Tips for better matches</summary><p>Name things the way ads do: "chicken breast," not "chicken." Tap the pencil ✎ to add a keyword like <i>boneless</i>, or a minus word like <i>-broth</i> to rule something out. Gray "not in this week's ad" is information, not an error — the item stays on your list for next week.</p></details></div>
   <div class="add" style="position:relative"><input id="newItem" placeholder="Add an item, e.g. ground beef" autocomplete="off"><button class="btn" id="addBtn">Add</button><div id="ta" class="ta" hidden></div></div>
   <div id="listOut"></div>
 </section>
 
 <section id="t-deals">
-  <div class="intro"><b>Weekly Deals — everything in this week's ads</b><p>Every sale item from every store, in one place. Search or filter, then tap <b>+ Add to list</b> on anything you want. That puts it on your list — it shows up on Compare Deals and on your Shopping List under the best store. Tap the button again to take it off.</p>
+  <div class="intro"><b>Weekly Deals — everything in this week's ads</b><p>Every sale item from every store, in one place. Search or filter, then tap <b>+ Add to list</b> on anything you want. That puts it straight on your Shopping List under the best store (and on Compare Deals so you can track it). Tap the button again to take it off.</p>
   <details><summary>How to read a price</summary><p>A black price is printed in the ad. An amber <b>≤</b> price is a ceiling worked out from "save up to" wording — you'll pay that or less. <span class="dc">DC</span> means clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off, so there's nothing to calculate.</p></details></div>
   <div class="filters">
     <select id="fStore"><option value="">All stores</option></select>
     <select id="fSection"><option value="">All sections</option></select>
+    <select id="fType"><option value="">All deal types</option><option value="buy5_save1">Buy 5 Save $1 only</option><option value="digital_coupon">Digital coupon only</option><option value="bogo">BOGO only</option><option value="multi_buy">Multi-buy (2/$5 etc.)</option></select>
     <input id="fText" placeholder="Search deals">
   </div>
   <div id="dealsOut"></div>
 </section>
 
 <section id="t-shop" hidden>
-  <div class="intro"><b>Shopping List — your trip plan, one section per store</b><p>Each item is placed under the single store where it's cheapest this week. Check things off in the aisle; checked items dim and drop out of the count. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices).</p>
-  <details><summary>What the Buy 5 Save $1 meter means</summary><p>Some stores take $1 off each of five or more participating items bought together. The meter counts how many are in that store's section, so you can see if one more unlocks the discount. Prices shown already assume you hit five.</p></details></div>
+  <div class="intro"><b>Shopping List — only what you've decided to buy this week</b><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under the store where it's cheapest (or the store you chose with Buy here). Check things off in the aisle. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices). When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
+  <details><summary>What the Buy 5 Save $1 meter means</summary><p>Some stores take $1 off each of five or more participating items bought together. The meter counts how many are in that store's section; tap <b>See all eligible items</b> to jump to the full list and add more. Eligible items carry a yellow <span class="b5">Buy 5 Save $1</span> badge everywhere in the app. Prices shown already assume you hit five — below five, add $1 to each.</p></details></div>
   <div id="shopOut"></div>
 </section>
 
@@ -142,7 +145,7 @@ section[hidden]{display:none}
   <div class="intro"><b>App Data — settings, your list, and the raw numbers</b><p>Choose which stores you shop, paste in a list, add a deal the ad didn't have, or download this week's data as a spreadsheet. Everything on this page stays on this device.</p></div>
   <div class="card"><h2>How this app works</h2>
     <p>Every week, the ads from our stores are turned into one data file called <code>deals.json</code>. This app reads that file and matches the deals against your shopping list. There is no login and no server: your list, your checkmarks, and your store choices live only on the phone or computer you're using right now.</p>
-    <p><b>The four tabs:</b> <b>Weekly Deals</b> is everything in this week's ads — tap <b>+ Add to list</b> on anything you want. <b>Compare Deals</b> shows each item on your list with every store's price side by side and a BEST sticker on the cheapest. <b>Shopping List</b> is the trip plan: your items sorted into one section per store, showing only the store where each is cheapest, with checkboxes and running totals. <b>App Data</b> is this page.</p>
+    <p><b>The four tabs:</b> <b>Weekly Deals</b> is everything in this week's ads — tap <b>+ Add to list</b> on anything you want. <b>Compare Deals</b> is your standing watch list — items you buy regularly, with every store's price side by side and a BEST sticker on the cheapest; nothing goes to the Shopping List from here until you tap <b>Buy here</b> on a store tag. <b>Shopping List</b> is this week's trip: only the items you chose, sorted into one section per store, with checkboxes and running totals. <b>App Data</b> is this page.</p>
     <p><b>Reading a price:</b> a solid yellow tag is a price printed in the ad. An amber tag with <b>≤</b> is a ceiling worked out from "save up to" wording — the shelf price may be lower, never higher. <span class="dc">DC</span> means you must clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off with no base price, so nothing can be calculated.</p>
   </div>
   <div class="card"><h2>This week's ads</h2><p id="adInfo"></p>
@@ -157,7 +160,7 @@ section[hidden]{display:none}
     <p><b>Fastest way to add:</b> start typing on the Compare Deals tab and a dropdown shows this week's matching deals across every store. Tap one and it's added with that exact deal pinned. Or browse the Weekly Deals tab and tap <b>+ Add to list</b> on anything you want.</p>
 <p><b>Getting better matches:</b> tap the pencil ✎ next to an item and add a keyword or two, like <i>boneless</i> or <i>80% lean</i>. Put a minus in front of a word to rule things out: <i>chicken</i> with <i>-broth -wings</i> stops matching soup and wings. When more than one deal fits, a "choose" list appears under the item; it remembers your pick.</p>
     <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:10px;font:inherit;font-size:17px" placeholder="ground beef&#10;eggs&#10;paper towels"></textarea>
-    <div class="stack"><button class="btn q" id="pasteAdd">Add pasted lines</button><button class="btn q" id="exportList">Download list.json</button><label class="btn q">Load list.json<input type="file" id="listFile" accept=".json" hidden></label><button class="btn q" id="clearChecks">Uncheck everything</button></div>
+    <div class="stack"><button class="btn q" id="pasteAdd">Add pasted lines</button><button class="btn q" id="exportList">Download list.json</button><label class="btn q">Load list.json<input type="file" id="listFile" accept=".json" hidden></label><button class="btn q" id="clearChecks">Uncheck everything</button><button class="btn q" id="clearBuy">Clear shopping list (keep items)</button></div>
     <p><b>Moving your list to another device:</b> Download list.json here, send the file to yourself, then Load list.json on the other device. Your list does not sync on its own.</p>
   </div>
   <div class="card"><h2>My stores</h2><p>Only shop at one or two of these? Untick the others and they disappear from Compare Deals, Shopping List totals and best-price picks on this device. The Weekly Deals tab still shows every store.</p><div class="stack" id="storeToggles"></div></div>
@@ -316,10 +319,10 @@ function renderList(){
     const tags=cells.map(x=>{
       const d=x.d,cl=!d?'none':d.price_basis==='save_up_to_ceiling'?'ceil':'';
       const isBest=best&&x.ch===best.ch&&priced.length>1;
-      const here=prefs[item.id]===x.ch;
-      const buyBtn=d?`<button class="buyhere ${here?'on':''}" data-buy="${item.id}|${esc(x.ch)}">${here?'✓ Buying here':'Buy here'}</button>`:'';
+      const here=item.buy&&(prefs[item.id]===x.ch||(!prefs[item.id]&&best&&x.ch===best.ch)||(!prefs[item.id]&&!best&&x===cells.find(c=>c.d)));
+      const buyBtn=d?`<button class="buyhere ${here?'on':''}" data-buy="${item.id}|${esc(x.ch)}">${here?'✓ Buying here — tap to remove':'Buy here'}</button>`:'';
       return `<div class="tag ${cl}">${isBest?'<span class="best">BEST</span>':''}
-        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}</div>
+        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?.deal_type==='buy5_save1'?'<span class="b5">Buy 5</span>':''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}</div>
         ${tagPrice(d)}<div class="why">${why(d)}</div>${buyBtn}</div>`;
     }).join('');
     const pickers=cells.filter(x=>ambiguous(x.c)).map(x=>`<div class="picker"><div class="sub">More than one ${esc(x.ch)} deal fits — choose:</div>${x.c.slice(0,4).map(({d})=>`<button data-pick="${item.id}|${esc(x.ch)}|${esc(d.id)}" class="${x.d?.id===d.id?'on':''}">${esc(d.product_name)} <span class="sub">${money(d.computed_unit_price)}${d.price_basis==='save_up_to_ceiling'?' ceiling':''}</span></button>`).join('')}</div>`).join('');
@@ -333,13 +336,13 @@ function renderList(){
 
 /* ---------- render: deals ---------- */
 function renderDeals(){
-  const fs=$('#fStore').value,fx=$('#fSection').value,ft=$('#fText').value.toLowerCase();
-  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.section===fx)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
+  const fs=$('#fStore').value,fx=$('#fSection').value,fy=$('#fType').value,ft=$('#fText').value.toLowerCase();
+  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
   $('#dealsOut').innerHTML=rows.length?rows.map(d=>`<div class="row deal">
-    <div>${chip(d.chain)} <span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}</div></div>
+    <div>${chip(d.chain)} <span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${d.deal_type==='buy5_save1'?'<span class="b5">Buy 5 Save $1</span>':''}</div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'<span class="sub">no unit price</span>':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}</div>
     <div class="r">${esc(d.restrictions)}</div>
-    <button class="plus ${Object.values(picks).some(p=>p[d.chain]===d.id)?'on':''}" data-plus="${esc(d.id)}">${Object.values(picks).some(p=>p[d.chain]===d.id)?'✓ On your list':'+ Add to list'}</button></div>`).join(''):'<div class="empty">No deals match those filters.</div>';
+    <button class="plus ${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'on':''}" data-plus="${esc(d.id)}">${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'✓ On shopping list':'+ Add to list'}</button></div>`).join(''):'<div class="empty">No deals match those filters.</div>';
   $('#nDeals').textContent=`${deals.length} this week`;
 }
 function fillFilters(){
@@ -350,14 +353,14 @@ function fillFilters(){
 /* ---------- render: shop ---------- */
 function planByStore(){
   const st=stores(),plan={};st.forEach(s=>plan[s]=[]);
-  for(const item of list){
+  for(const item of list.filter(i=>i.buy)){
     const bs=byStore(item);
     const cells=st.map(ch=>({ch,d:chosen(item,ch,bs[ch]||[])})).filter(x=>x.d);
     if(!cells.length) continue;
     const priced=cells.filter(x=>x.d.computed_unit_price!=null);
     const su=new Set(priced.map(x=>x.d.unit||'ea')).size===1;
     const forced=prefs[item.id]&&cells.find(x=>x.ch===prefs[item.id]);
-    const win=forced||(priced.length&&su?priced.reduce((a,b)=>b.d.computed_unit_price<a.d.computed_unit_price?b:a):(priced[0]||cells[0]));
+    const win=forced||(priced.length&&su?priced.reduce((a,b)=>b.d.computed_unit_price<a.d.computed_unit_price?b:a):cells[0]);
     plan[win.ch].push({item,d:win.d});
   }
   return plan;
@@ -369,13 +372,14 @@ function renderShop(){
     let firm=0,est=0;items.forEach(({d})=>{if(d.computed_unit_price!=null){d.price_basis==='save_up_to_ceiling'?est+=d.computed_unit_price:firm+=d.computed_unit_price}});
     html+=`<div class="store-h"><h2>${chip(ch)} ${items.length} item${items.length>1?'s':''}</h2><div class="tot">firm <b>${money(firm)}</b>${est?` + est. ≤ ${money(est)}`:''}</div></div>`;
     if(deals.some(d=>d.chain===ch&&d.deal_type==='buy5_save1')){const b5=items.filter(({d})=>d.deal_type==='buy5_save1').length;
-      html+=`<div class="meter ${b5>=5?'hit':''}">Buy 5 Save $1: ${b5} of 5 ${b5>=5?'— you get $1 off each':`— ${5-b5} more participating item${5-b5>1?'s':''} to unlock`}<div class="bar">${[0,1,2,3,4].map(i=>`<i class="${i<b5?'on':''}"></i>`).join('')}</div></div>`}
+      const elig=deals.filter(d=>d.chain===ch&&d.deal_type==='buy5_save1').length;
+      html+=`<div class="meter ${b5>=5?'hit':''}">Buy 5 Save $1: ${b5} of 5 ${b5>=5?'— you get $1 off each':`— ${5-b5} more participating item${5-b5>1?'s':''} to unlock`}<div class="bar">${[0,1,2,3,4].map(i=>`<i class="${i<b5?'on':''}"></i>`).join('')}</div><button class="btn q s" style="margin-top:8px" data-showb5="${esc(ch)}">See all ${elig} eligible ${esc(ch)} items</button></div>`}
     html+=items.map(({item,d})=>{const key=item.id+'|'+d.id,done=!!checks[key];if(!done)n++;
-      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' · '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}<br>${esc(d.restrictions)}</div></div><div class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'—':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)}</div></label>`}).join('');
+      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' · '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${d.deal_type==='buy5_save1'?'<span class="b5">Buy 5 Save $1</span>':''}<br>${esc(d.restrictions)}</div></div><div class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'—':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)}</div></label>`}).join('');
   }
-  const unmatched=list.filter(i=>!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
+  const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length) html+=`<div class="store-h"><h2>Not on sale this week</h2></div><div class="row sub">${unmatched.map(i=>esc(i.n)).join(', ')} — buy wherever you're already going.</div>`;
-  el.innerHTML=html||'<div class="empty">Nothing on your list matches this week\'s ads yet.</div>';
+  el.innerHTML=html||'<div class="empty">Nothing on your shopping list yet. Tap <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals.</div>';
   $('#nShop').textContent=`${n} to get`;
 }
 
@@ -399,12 +403,12 @@ document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.addEventListener('cli
   ['list','deals','shop','data'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.t);window.scrollTo(0,0);
 }));
 function addItems(names){let added=0;for(let n of names){n=n.trim().replace(/^[-•*]\s*/,'');if(!n||/^[A-Z &]+:?$/.test(n)&&n.length<24) continue; // skips ATK category headers like "PRODUCE"
-  if(list.some(i=>i.n.toLowerCase()===n.toLowerCase())) continue;
-  list.push({n,k:'',id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)});added++}
+  const dup=list.find(i=>i.n.toLowerCase()===n.toLowerCase());if(dup){dup.buy=true;added++;continue} // already tracked: just put it on this week's shopping list
+  list.push({n,k:'',buy:true,id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)});added++}
   saveList();renderList();renderShop();renderData();return added}
 function addPinned(name,deal){const n=(name||'').trim()||deal.product_name;let it=list.find(i=>i.n.toLowerCase()===n.toLowerCase());
   if(!it){it={n,k:'',id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)};list.push(it)}
-  (picks[it.id]??={})[deal.chain]=deal.id;saveList();renderList();renderShop();renderData();renderDeals();return it}
+  it.buy=true;(picks[it.id]??={})[deal.chain]=deal.id;saveList();renderList();renderShop();renderData();renderDeals();return it}
 function taRender(){const q=$('#newItem').value.trim(),box=$('#ta');if(q.length<2||!deals.length){box.hidden=true;return}
   const words=q.toLowerCase().split(/\s+/),last=words[words.length-1],base=words.slice(0,-1).join(' ');
   const pre=d=>tokens(d.product_name).some(w=>w.startsWith(last))||(deal=>false)(d);
@@ -418,19 +422,24 @@ $('#ta').addEventListener('click',e=>{const b=e.target.closest('[data-ta]');if(!
 $('#addBtn').addEventListener('click',()=>{addItems([$('#newItem').value]);$('#newItem').value='';$('#ta').hidden=true;$('#newItem').focus()});
 $('#newItem').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#addBtn').click()}if(e.key==='Escape')$('#ta').hidden=true});
 $('#dealsOut').addEventListener('click',e=>{const b=e.target.closest('[data-plus]');if(!b)return;const d=deals.find(x=>x.id===b.dataset.plus);if(!d)return;
-  const on=list.filter(i=>picks[i.id]?.[d.chain]===d.id);
-  if(on.length){on.forEach(i=>{list=list.filter(x=>x.id!==i.id);delete picks[i.id];delete prefs[i.id]});saveList();renderList();renderShop();renderData();renderDeals()}
+  const on=list.filter(i=>i.buy&&picks[i.id]?.[d.chain]===d.id);
+  if(on.length){on.forEach(i=>{i.buy=false});saveList();renderList();renderShop();renderData();renderDeals()}
   else addPinned(d.product_name,d)});
 $('#listOut').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t) return;
   if(t.dataset.del){list=list.filter(i=>i.id!==t.dataset.del);delete picks[t.dataset.del];saveList();renderList();renderShop();renderData()}
   if(t.dataset.kw){const k=$('#kw-'+t.dataset.kw);k.hidden=!k.hidden;if(!k.hidden)k.querySelector('input').focus()}
   if(t.dataset.pick){const [id,ch,did]=t.dataset.pick.split('|');(picks[id]??={})[ch]=did;saveList();renderList();renderShop()}
-  if(t.dataset.buy){const [id,ch]=t.dataset.buy.split('|');if(prefs[id]===ch)delete prefs[id];else prefs[id]=ch;saveList();renderList();renderShop()}
+  if(t.dataset.buy){const [id,ch]=t.dataset.buy.split('|');const it=list.find(i=>i.id===id);if(!it)return;
+    if(it.buy&&prefs[id]===ch){it.buy=false;delete prefs[id]}          // tap the selected store again: off the shopping list
+    else{it.buy=true;prefs[id]=ch}                                       // tap a store: on the shopping list, at that store
+    saveList();renderList();renderShop();renderDeals()}
 });
 $('#listOut').addEventListener('change',e=>{const id=e.target.dataset.kwin;if(!id) return;const it=list.find(i=>i.id===id);it.k=e.target.value;saveList();renderList();renderShop()});
-['fStore','fSection','fText'].forEach(id=>$('#'+id).addEventListener('input',renderDeals));
+['fStore','fSection','fType','fText'].forEach(id=>$('#'+id).addEventListener('input',renderDeals));
+$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-showb5]');if(!b)return;$('#fStore').value=b.dataset.showb5;$('#fSection').value='';$('#fType').value='buy5_save1';$('#fText').value='';renderDeals();document.querySelector('.tabs [data-t=deals]').click()});
 $('#shopOut').addEventListener('change',e=>{const k=e.target.dataset.ck;if(!k) return;checks[k]=e.target.checked;if(!checks[k])delete checks[k];saveList();renderShop()});
+$('#clearBuy').addEventListener('click',()=>{list.forEach(i=>i.buy=false);checks={};saveList();renderAll()});
 $('#clearChecks').addEventListener('click',()=>{checks={};saveList();renderShop()});
 $('#pasteAdd').addEventListener('click',()=>{const n=addItems($('#pasteBox').value.split(/\n/));$('#pasteBox').value='';$('#listInfo').textContent=`Added ${n}. ${list.length} items on the list.`});
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
