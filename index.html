@@ -124,7 +124,7 @@ section[hidden]{display:none}
 </section>
 
 <section id="t-deals">
-  <div class="intro"><b>Weekly Deals — everything in this week's ads</b><p>Every sale item from every store, in one place. Search or filter, then tap <b>+ Add to list</b> on anything you want. That puts it straight on your Shopping List under the best store (and on Compare Deals so you can track it). Tap the button again to take it off.</p>
+  <div class="intro"><b>Weekly Deals — everything in this week's ads</b><p>Every sale item from every store, in one place. Filter by store, ad section, or deal type (Buy 5 Save $1, digital coupon, BOGO), or search by name. Then tap <b>+ Add to list</b> on anything you want. That puts it straight on your Shopping List under the best store (and on Compare Deals so you can track it). Tap the button again to take it off.</p>
   <details><summary>How to read a price</summary><p>A black price is printed in the ad. An amber <b>≤</b> price is a ceiling worked out from "save up to" wording — you'll pay that or less. <span class="dc">DC</span> means clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off, so there's nothing to calculate.</p></details></div>
   <div class="filters">
     <select id="fStore"><option value="">All stores</option></select>
@@ -136,7 +136,7 @@ section[hidden]{display:none}
 </section>
 
 <section id="t-shop" hidden>
-  <div class="intro"><b>Shopping List — only what you've decided to buy this week</b><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under the store where it's cheapest (or the store you chose with Buy here). Check things off in the aisle. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices). When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
+  <div class="intro"><b>Shopping List — only what you've decided to buy this week</b><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under the store where it's cheapest (or the store you chose with Buy here). Items you chose that aren't in any ad this week are listed at the bottom under "Not on sale this week" so you don't forget them. Check things off in the aisle; checked items dim and drop out of the count. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices). When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
   <details><summary>What the Buy 5 Save $1 meter means</summary><p>Some stores take $1 off each of five or more participating items bought together. The meter counts how many are in that store's section; tap <b>See all eligible items</b> to jump to the full list and add more. Eligible items carry a yellow <span class="b5">Buy 5 Save $1</span> badge everywhere in the app. Prices shown already assume you hit five — below five, add $1 to each.</p></details></div>
   <div id="shopOut"></div>
 </section>
@@ -155,12 +155,14 @@ section[hidden]{display:none}
       <div class="stack"><label class="btn q">Load deals.json or .csv<input type="file" id="dealsFile" accept=".json,.csv,application/json,text/csv" hidden></label><button class="btn q" id="fetchDeals">Reload from site</button></div>
     </details>
   </div>
-  <div class="card"><h2>Your shopping list</h2><p id="listInfo"></p>
-    <p><b>Adding items:</b> type one item at a time on the Compare Deals tab, or paste a whole list below (one item per line — copied from Notes, a text, or another app) and press Add pasted lines. Category headings like PRODUCE are skipped automatically.</p>
-    <p><b>Fastest way to add:</b> start typing on the Compare Deals tab and a dropdown shows this week's matching deals across every store. Tap one and it's added with that exact deal pinned. Or browse the Weekly Deals tab and tap <b>+ Add to list</b> on anything you want.</p>
+  <div class="card"><h2>Your items</h2><p id="listInfo"></p>
+    <p><b>Two lists, one set of items.</b> Everything you add is tracked on <b>Compare Deals</b> week after week (your watch list). Only the items you've marked with <b>Buy here</b> or <b>+ Add to list</b> appear on the <b>Shopping List</b> (this week's trip). Removing an item with the × on Compare Deals deletes it from both.</p>
+    <p><b>Adding items:</b> type one item at a time on the Compare Deals tab, or paste a whole list below (one item per line — copied from Notes, a text, or another app) and press Add pasted lines. Anything you type or paste goes straight onto this week's Shopping List; typing an item that's already tracked just puts it on this week's trip. Category headings like PRODUCE are skipped automatically.</p>
+    <p><b>Fastest way to add:</b> start typing on the Compare Deals tab and a dropdown shows this week's matching deals across every store. Tap one and it's added to your Shopping List with that exact deal pinned. Or browse the Weekly Deals tab and tap <b>+ Add to list</b> on anything you want. Either way, the tag for the store you're buying at lights up on Compare Deals; tap a different store's <b>Buy here</b> to switch, or the lit one to take it off the trip.</p>
 <p><b>Getting better matches:</b> tap the pencil ✎ next to an item and add a keyword or two, like <i>boneless</i> or <i>80% lean</i>. Put a minus in front of a word to rule things out: <i>chicken</i> with <i>-broth -wings</i> stops matching soup and wings. When more than one deal fits, a "choose" list appears under the item; it remembers your pick.</p>
     <textarea id="pasteBox" rows="5" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:10px;font:inherit;font-size:17px" placeholder="ground beef&#10;eggs&#10;paper towels"></textarea>
     <div class="stack"><button class="btn q" id="pasteAdd">Add pasted lines</button><button class="btn q" id="exportList">Download list.json</button><label class="btn q">Load list.json<input type="file" id="listFile" accept=".json" hidden></label><button class="btn q" id="clearChecks">Uncheck everything</button><button class="btn q" id="clearBuy">Clear shopping list (keep items)</button></div>
+    <p><b>After a shopping trip:</b> <b>Uncheck everything</b> clears the checkmarks but keeps the trip; <b>Clear shopping list (keep items)</b> empties this week's Shopping List while leaving every item on Compare Deals for next week.</p>
     <p><b>Moving your list to another device:</b> Download list.json here, send the file to yourself, then Load list.json on the other device. Your list does not sync on its own.</p>
   </div>
   <div class="card"><h2>My stores</h2><p>Only shop at one or two of these? Untick the others and they disappear from Compare Deals, Shopping List totals and best-price picks on this device. The Weekly Deals tab still shows every store.</p><div class="stack" id="storeToggles"></div></div>
