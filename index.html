@@ -118,17 +118,17 @@ section[hidden]{display:none}
 .printbar{display:flex;justify-content:flex-end;margin:4px 0 2px}
 #printOut{display:none}
 @media print{
-  @page{margin:0.5in}
+  @page{margin:0;size:auto}
   html,body{background:#fff!important;color:#000!important;font-size:12pt!important}
   body>*:not(#printOut){display:none!important}
-  #printOut{display:block!important;font-family:Georgia,'Times New Roman',serif;color:#000}
+  #printOut{display:block!important;font-family:Georgia,'Times New Roman',serif;color:#000}#printOut table.pwrap{width:100%;border-collapse:collapse}#printOut table.pwrap>thead>tr>td,#printOut table.pwrap>tfoot>tr>td{height:0.5in;padding:0;border:0}#printOut table.pwrap>tbody>tr>td.pbody{padding:0 0.6in;border:0;font-size:inherit}
   #printOut h1{font-size:18pt;margin:0 0 2pt}
   #printOut .pmeta{font-size:10pt;margin:0 0 10pt;border-bottom:1.5pt solid #000;padding-bottom:6pt}
   #printOut .pstore{margin:0 0 12pt}#printOut .pstore.keep{break-inside:avoid;page-break-inside:avoid}#printOut h2,#printOut .pb5{break-after:avoid;page-break-after:avoid}#printOut tr{break-inside:avoid;page-break-inside:avoid}
   #printOut h2{font-size:14pt;margin:0 0 3pt;display:flex;justify-content:space-between;align-items:baseline;border-bottom:.75pt solid #000;padding-bottom:2pt}
   #printOut h2 small{font-size:10pt;font-weight:normal}
   #printOut table{width:100%;border-collapse:collapse}
-  #printOut td{padding:4pt 3pt;vertical-align:top;border-bottom:.5pt solid #bbb;font-size:11pt}
+  #printOut .pstore td{padding:4pt 3pt;vertical-align:top;border-bottom:.5pt solid #bbb;font-size:11pt}
   #printOut td.bx{width:16pt}
   #printOut td.bx span{display:inline-block;width:10pt;height:10pt;border:1pt solid #000;margin-top:2pt}
   #printOut td.pr{text-align:right;white-space:nowrap;font-weight:bold;width:70pt}
@@ -532,9 +532,9 @@ function buildPrint(){
   if(unmatched.length){count+=unmatched.length;body+=`<div class="pstore"><h2><span>Not on sale this week <small>(${unmatched.length})</small></span></h2><table>${unmatched.map(i=>`<tr><td class="bx"><span></span></td><td><b>${esc(i.n)}</b></td><td class="pr"></td></tr>`).join('')}</table></div>`}
   const live=Object.entries(adWeeks).filter(([,v])=>v);
   const today=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  box.innerHTML=`<h1>Shopping List</h1><div class="pmeta">Printed ${esc(today)}${live.length?' · Ads: '+live.map(([ch,v])=>`${esc(ch)} ${pmd(v.valid_from)}–${pmd(v.valid_to)}`).join(' · '):''}</div>`+
+  box.innerHTML=`<table class="pwrap"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td class="pbody"><h1>Shopping List</h1><div class="pmeta">Printed ${esc(today)}${live.length?' · Ads: '+live.map(([ch,v])=>`${esc(ch)} ${pmd(v.valid_from)}–${pmd(v.valid_to)}`).join(' · '):''}</div>`+
     (body||'<p>Nothing left to buy — every item is checked off.</p>')+
-    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}</div><div class="pnote">≤ = "save up to" ceiling price; actual may be lower. Items already checked off in the app are not printed.</div>`:'');
+    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}</div><div class="pnote">≤ = "save up to" ceiling price; actual may be lower. Items already checked off in the app are not printed.</div>`:'')+`</td></tr></tbody></table>`;
 }
 window.addEventListener('beforeprint',buildPrint); // covers Ctrl+P / browser menu too
 document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){buildPrint();window.print()}});
