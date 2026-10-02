@@ -160,7 +160,7 @@ section[hidden]{display:none}
   <div class="filters" id="fMore" hidden>
     <select id="fStore"><option value="">All stores</option></select>
     <select id="fSection"><option value="">All sections</option></select>
-    <select id="fType"><option value="">All deal types</option><option value="buy5_save1">Buy 5 Save $1 only</option><option value="digital_coupon">Digital coupon only</option><option value="bogo">BOGO only</option><option value="multi_buy">Multi-buy (2/$5 etc.)</option></select>
+    <select id="fType"><option value="">All deal types</option></select>
   </div>
   <div id="dealsOut"></div>
 </section>
@@ -383,6 +383,12 @@ function renderDeals(){
 function fillFilters(){
   const keep=(sel,vals)=>{const cur=sel.value;sel.innerHTML=`<option value="">${sel.id==='fStore'?'All stores':'All sections'}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join('');sel.value=cur};
   keep($('#fStore'),allStores());keep($('#fSection'),[...new Set(deals.map(d=>d.section))]);
+  const tl={buy5_save1:'Buy 5 Save $1',digital_coupon:'Digital coupon',bogo:'BOGO (Buy 1, Get 1 Free)',multi_buy:'Multi-buy (2/$5 etc.)',sale:'Sale price',bogo_50_off:'Buy 1, Get 1 50% off',percent_off:'Percent off'};
+  const tlabel=t=>{if(tl[t])return tl[t];let m;if(m=t.match(/^buy(\d+)_get(\d+)$/))return`Buy ${m[1]}, Get ${m[2]} Free`;if(m=t.match(/^buy(\d+)_save(\d+)$/))return`Buy ${m[1]}, Save $${m[2]} extra`;if(m=t.match(/^spend(\d+)_save(\d+)$/))return`Spend $${m[1]}, Save $${m[2]}`;return t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
+  const tsel=$('#fType'),tcur=tsel.value,tcounts={};deals.forEach(d=>{if(d.deal_type)tcounts[d.deal_type]=(tcounts[d.deal_type]||0)+1});
+  const ttypes=Object.keys(tcounts).sort((a,b)=>tcounts[b]-tcounts[a]||a.localeCompare(b));
+  tsel.innerHTML='<option value="">All deal types</option>'+ttypes.map(x=>`<option value="${esc(x)}">${esc(tlabel(x))} (${tcounts[x]})</option>`).join('');
+  tsel.value=ttypes.includes(tcur)?tcur:'';
 }
 
 /* ---------- render: shop ---------- */
