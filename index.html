@@ -167,7 +167,7 @@ section[hidden]{display:none}
 
 <section id="t-shop" hidden>
   <details class="intro"><summary><b>Shopping List — only what you've decided to buy this week</b><span class="hint">tap for help</span></summary><div class="body"><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under the store where it's cheapest by unit price (or the store you chose with Buy here). Items you chose that aren't in any ad this week are listed at the bottom under "Not on sale this week" so you don't forget them. Check things off in the aisle; checked items dim and drop out of the count. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices). When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
-  <details><summary>What the Buy 5 Save $1 meter means</summary><p>Some stores take $1 off each of five or more participating items bought together. The meter counts how many are in that store's section; tap <b>See all eligible items</b> to jump to the full list and add more. Eligible items carry a yellow <span class="b5">Buy 5 Save $1</span> badge everywhere in the app. Prices shown already assume you hit five — below five, add $1 to each.</p></details></div></details>
+  <details><summary>What the buy-more-save-more meter means</summary><p>Some stores discount each item when you buy a set number of participating items together (Buy 5 Save $1, Buy 3 Save $2, Buy 5 Pay 99¢ and so on). The meter counts how many are in that store's section; tap <b>See all eligible items</b> to jump to the full list and add more. Eligible items carry a yellow badge like <span class="b5">Buy 5 Save $1</span> everywhere in the app. Until the meter is full, those items and the store total are shown at full price; once it fills, they drop to the deal price.</p></details></div></details>
   <div id="shopOut"></div>
 </section>
 
@@ -248,8 +248,11 @@ function normalizeDeals(raw){
     const o=Array.isArray(r)?Object.fromEntries(SCHEMA.map((k,j)=>[k,r[j]])):r;
     if(Array.isArray(r)&&r.length!==16) throw new Error(`Row ${i+1} has ${r.length} columns, expected 16`);
     if((o.price_basis==null)!==(o.computed_unit_price==null)) throw new Error(`Row ${i+1} (${o.product_name}): price_basis and computed_unit_price must both be null or both set`);
-    o.id=o.deal_group_id||`R${i}`;o._i=i;return o;
+    o._i=i;return o;
   });
+  /* every row gets its own id: the primary keeps the group id (so saved picks still work), other rows get a ~n suffix */
+  const used=new Set();out.forEach((o,i)=>{if(o.row_role==='primary'||!o.deal_group_id){o.id=o.deal_group_id||`R${i}`;used.add(o.id)}});
+  const seq={};out.forEach(o=>{if(o.id)return;const g=o.deal_group_id;if(!used.has(g)){o.id=g;used.add(g);return}let k;do{k=seq[g]=(seq[g]||1)+1}while(used.has(`${g}~${k}`));o.id=`${g}~${k}`;used.add(o.id)});
   const prim={};out.forEach(o=>{if(o.row_role==='primary'){prim[o.deal_group_id]=(prim[o.deal_group_id]||0)+1}});
   for(const g in prim) if(prim[g]!==1) throw new Error(`deal_group_id ${g} has ${prim[g]} primary rows, expected exactly 1`);
   return {rows:out,weeks};
@@ -258,6 +261,9 @@ let mine=store.get('dm.mine',[]);
 function setDeals(raw,source){
   const nz=normalizeDeals(raw);const rows=nz.rows.filter(r=>!String(r.deal_group_id||'').startsWith('MINE-')),weeks=Object.keys(nz.weeks).length?nz.weeks:adWeeks;deals=rows.concat(mine.map((r,i)=>({...r,id:r.deal_group_id,_i:rows.length+i})));adWeeks=weeks;
   store.set('dm.deals',raw);store.set('dm.dealsSource',source);
+  const sig=JSON.stringify(Object.entries(adWeeks).map(([c,v])=>[c,v&&v.valid_from]).sort()),prev=store.get('dm.weekSig',null);
+  if(prev&&prev!==sig&&list.some(i=>i.buy))store.set('dm.rollover',true);
+  store.set('dm.weekSig',sig);
   renderAll();
 }
 
@@ -275,9 +281,10 @@ const saveList=()=>{store.set('dm.list',list);store.set('dm.picks',picks);store.
 /* ---------- matching (deterministic, no AI) ---------- */
 const STOP=new Set(['or','and','of','the','a','with','in','select','varieties','per','ct','oz','lb','fl','pack','package','each','ea','usda','choice','fresh','kroger','publix','private','selection','simple','truth','brand','family','size','up','to']);
 const SYN={hamburger:'ground beef',mince:'ground beef',chicken:'chicken perdue',franks:'franks hot dogs',hotdog:'franks hot dogs',hotdogs:'franks hot dogs',mayo:'mayonnaise',ketchup:'ketchup catsup',soda:'coca-cola pepsi canada dry',pop:'coca-cola pepsi',cheese:'cheese singles',yogurt:'yogurt oikos',detergent:'detergent tide gain',towels:'towels',bbq:'barbecue',water:'water purified'};
-const stem=w=>w.length>4&&w.endsWith('s')?w.slice(0,-1):w;
-function tokens(s){return String(s||'').toLowerCase().replace(/[^a-z0-9%&' -]/g,' ').split(/[\s,/&]+/).filter(w=>w&&!STOP.has(w)).map(stem)}
-function expand(s){return tokens(s).flatMap(t=>SYN[t]?[t,...tokens(SYN[t])]:[t])}
+const stem=w=>w.length>3&&w.endsWith('s')&&!w.endsWith('ss')?w.slice(0,-1):w;
+const SYNS=Object.fromEntries(Object.entries(SYN).map(([k,v])=>[stem(k),v]));
+function tokens(s){return String(s||'').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9%& -]/g,' ').split(/[\s,/&]+/).filter(w=>w&&!STOP.has(w)).map(stem)}
+function expand(s){return tokens(s).flatMap(t=>SYNS[t]?[t,...tokens(SYNS[t])]:[t])}
 function splitKw(k){const out={inc:[],exc:[]};String(k||'').split(/[\s,]+/).forEach(w=>{if(!w)return;w.startsWith('-')?out.exc.push(w.slice(1).toLowerCase()):out.inc.push(w)});return out}
 function score(item,deal){
   const kw=splitKw(item.k),q=expand(item.n),kq=kw.inc.length?expand(kw.inc.join(' ')):[];
@@ -296,25 +303,43 @@ function score(item,deal){
   s+=Math.min(extra,2)*0.2;
   return s;
 }
+/* keywords are the shopper's explicit intent: a deal that matches more of them always outranks one that matches fewer */
+function kwHits(item,deal){const kw=splitKw(item.k);if(!kw.inc.length)return 0;
+  const kq=[...new Set(expand(kw.inc.join(' ')))],name=tokens(deal.product_name+' '+(deal.size||''));
+  return kq.filter(t=>name.some(n=>n===t||n.startsWith(t))).length}
 function candidates(item){
-  return deals.map(d=>({d,s:score(item,d)})).filter(x=>x.s>=1.2).sort((a,b)=>b.s-a.s);
+  return deals.map(d=>({d,s:score(item,d),k:kwHits(item,d)})).filter(x=>x.s>=1.2).sort((a,b)=>b.k-a.k||b.s-a.s);
 }
 function byStore(item){
   const c=candidates(item),out={};
-  for(const {d,s} of c){(out[d.chain]??=[]).push({d,s})}
+  for(const x of c){(out[x.d.chain]??=[]).push(x)}
   return out;
 }
 function chosen(item,chain,cands){
   const p=picks[item.id]?.[chain];
   return (p&&cands.find(x=>x.d.id===p)?.d)||cands[0]?.d||null;
 }
-function ambiguous(cands){return cands.length>1&&cands[1].s>=cands[0].s-0.6}
+function ambiguous(cands){return cands.length>1&&cands[1].k===cands[0].k&&cands[1].s>=cands[0].s-0.6}
 
 /* ---------- store colours: fixed palette by store order in the data ---------- */
 const PALETTE=['#0b4fa3','#2d7a3e','#a3400b','#6b2fa3','#0b7a80','#a30b52','#4a5a0b','#5a4a0b'];
 const KNOWN={kroger:'#0b4fa3',publix:'#2d7a3e',aldi:'#0b6ea3',walmart:'#0b4fa3',costco:'#a30b0b',target:'#c8102e',lidl:'#0b4fa3','food lion':'#a30b0b','sam\'s club':'#0b4fa3'};
 function storeColor(s){const i=allStores().indexOf(s);return KNOWN[String(s).toLowerCase()]||PALETTE[(i<0?0:i)%PALETTE.length]}
 function chip(s){return `<span class="chip" style="--c:${storeColor(s)}">${esc(s)}</span>`}
+/* ---------- buy-N threshold deals (Buy 5 Save $1, Buy 3 Save $2, Buy 5 Pay 99c ...) ---------- */
+function thr(d){const t=(d&&d.deal_type)||'';let m;
+  if(m=t.match(/^buy(\d+)_save(\d+)$/))return{n:+m[1],label:`Buy ${m[1]} Save $${m[2]}`,under:d.regular_price??(d.computed_unit_price!=null?Math.round((d.computed_unit_price+ +m[2])*100)/100:null)};
+  if(m=t.match(/^buy(\d+)_pay(\d+)c$/))return{n:+m[1],label:`Buy ${m[1]} Pay ${m[2]}\u00a2`,under:d.regular_price??null};
+  return null}
+const b5badge=(d,short)=>{const T=thr(d);return T?`<span class="b5">${esc(short?'Buy '+T.n:T.label)}</span>`:''};
+const limited=d=>/\bday sale\b/i.test(d?.section||'');
+/* per-store trip maths: is each threshold met, and what does each item really cost if it is not */
+function tripMath(items){const cnt={};items.forEach(({d})=>{if(thr(d))cnt[d.deal_type]=(cnt[d.deal_type]||0)+1});
+  const met=d=>{const T=thr(d);return !T||(cnt[d.deal_type]||0)>=T.n};
+  const price=d=>{if(d.computed_unit_price==null)return null;if(met(d))return d.computed_unit_price;const u=thr(d).under;return u==null?d.computed_unit_price:u};
+  return{cnt,met,price}}
+function tripTotals(items,M){let firm=0,est=0,np=0;items.forEach(({d})=>{const p=M.price(d);if(p==null){np++;return}d.price_basis==='save_up_to_ceiling'?est+=p:firm+=p});return{firm,est,np}}
+const totLine=t=>`firm <b>${money(t.firm)}</b>${t.est?` + est. \u2264 ${money(t.est)}`:''}${t.np?` + ${t.np} not priced`:''}`;
 /* ---------- formatting ---------- */
 const money=v=>v==null?'—':'$'+Number(v).toFixed(2);
 function tagPrice(d){
@@ -327,7 +352,8 @@ function why(d){
   if(!d) return 'not in this week\'s ad';
   const bits=[];
   if(d.deal_type==='digital_coupon') bits.push('digital coupon');
-  if(d.deal_type==='buy5_save1') bits.push('buy 5 save $1 each');
+  if(thr(d)) bits.push(esc(thr(d).label.toLowerCase())+' each');
+  if(limited(d)) bits.push('<b>'+esc(d.section)+'</b>');
   if(d.deal_type==='bogo') bits.push('BOGO – no printed base price');
   if(['buy2_get3','buy2_get1'].includes(d.deal_type)) bits.push(d.restrictions.match(/Buy \d, Get \d FREE/i)?.[0]||d.deal_type);
   if(d.deal_type==='multi_buy') bits.push(d.restrictions.match(/\d\/\$\d+/)?.[0]||'multi-buy');
@@ -357,7 +383,7 @@ function renderList(){
       const here=item.buy&&(prefs[item.id]===x.ch||(!prefs[item.id]&&best&&x.ch===best.ch)||(!prefs[item.id]&&!best&&x===cells.find(c=>c.d)));
       const buyBtn=d?`<button class="buyhere ${here?'on':''}" data-buy="${item.id}|${esc(x.ch)}">${here?'✓ Buying here':'Buy here'}</button>`:'';
       return `<div class="tag ${cl}">
-        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?.deal_type==='buy5_save1'?'<span class="b5">Buy 5</span>':''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}</div>
+        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?b5badge(d,true):''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}</div>
         ${tagPrice(d)}<div class="why">${why(d)}</div>${buyBtn}</div>`;
     }).join('');
     const pickers=cells.filter(x=>ambiguous(x.c)).map(x=>`<div class="picker"><div class="sub">More than one ${esc(x.ch)} deal fits — choose:</div>${x.c.slice(0,4).map(({d})=>`<button data-pick="${item.id}|${esc(x.ch)}|${esc(d.id)}" class="${x.d?.id===d.id?'on':''}">${esc(d.product_name)} <span class="sub">${money(d.computed_unit_price)}${d.price_basis==='save_up_to_ceiling'?' ceiling':''}</span></button>`).join('')}</div>`).join('');
@@ -374,7 +400,7 @@ function renderDeals(){
   const fs=$('#fStore').value,fx=$('#fSection').value,fy=$('#fType').value,ft=$('#fText').value.toLowerCase();
   const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
   $('#dealsOut').innerHTML=rows.length?rows.map(d=>`<div class="row deal">
-    <div>${chip(d.chain)} <span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${d.deal_type==='buy5_save1'?'<span class="b5">Buy 5 Save $1</span>':''}</div></div>
+    <div>${chip(d.chain)} <span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}</div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'<span class="sub">no unit price</span>':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}</div>
     <div class="r">${esc(d.restrictions)}</div>
     <button class="plus ${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'on':''}" data-plus="${esc(d.id)}">${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'✓ On shopping list':'+ Add to list'}</button></div>`).join(''):'<div class="empty">No deals match those filters.</div>';
@@ -383,8 +409,8 @@ function renderDeals(){
 function fillFilters(){
   const keep=(sel,vals)=>{const cur=sel.value;sel.innerHTML=`<option value="">${sel.id==='fStore'?'All stores':'All sections'}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join('');sel.value=cur};
   keep($('#fStore'),allStores());keep($('#fSection'),[...new Set(deals.map(d=>d.section))]);
-  const tl={buy5_save1:'Buy 5 Save $1',digital_coupon:'Digital coupon',bogo:'BOGO (Buy 1, Get 1 Free)',multi_buy:'Multi-buy (2/$5 etc.)',sale:'Sale price',bogo_50_off:'Buy 1, Get 1 50% off',percent_off:'Percent off'};
-  const tlabel=t=>{if(tl[t])return tl[t];let m;if(m=t.match(/^buy(\d+)_get(\d+)$/))return`Buy ${m[1]}, Get ${m[2]} Free`;if(m=t.match(/^buy(\d+)_save(\d+)$/))return`Buy ${m[1]}, Save $${m[2]} extra`;if(m=t.match(/^spend(\d+)_save(\d+)$/))return`Spend $${m[1]}, Save $${m[2]}`;return t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
+  const tl={digital_coupon:'Digital coupon',bogo:'BOGO (Buy 1, Get 1 Free)',multi_buy:'Multi-buy (2/$5 etc.)',sale:'Sale price',bogo_50_off:'Buy 1, Get 1 50% off',percent_off:'Percent off'};
+  const tlabel=t=>{if(tl[t])return tl[t];let m;if(m=t.match(/^buy(\d+)_get(\d+)$/))return`Buy ${m[1]}, Get ${m[2]} Free`;if(m=t.match(/^buy(\d+)_save(\d+)$/))return`Buy ${m[1]}, Save $${m[2]} each`;if(m=t.match(/^buy(\d+)_pay(\d+)c$/))return`Buy ${m[1]}, Pay ${m[2]}\u00a2 each`;if(m=t.match(/^spend(\d+)_save(\d+)$/))return`Spend $${m[1]}, Save $${m[2]}`;return t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
   const tsel=$('#fType'),tcur=tsel.value,tcounts={};deals.forEach(d=>{if(d.deal_type)tcounts[d.deal_type]=(tcounts[d.deal_type]||0)+1});
   const ttypes=Object.keys(tcounts).sort((a,b)=>tcounts[b]-tcounts[a]||a.localeCompare(b));
   tsel.innerHTML='<option value="">All deal types</option>'+ttypes.map(x=>`<option value="${esc(x)}">${esc(tlabel(x))} (${tcounts[x]})</option>`).join('');
@@ -410,13 +436,14 @@ function renderShop(){
   const plan=planByStore(),el=$('#shopOut');let n=0,html='';
   for(const ch of Object.keys(plan)){
     const items=plan[ch];if(!items.length) continue;
-    let firm=0,est=0;items.forEach(({d})=>{if(d.computed_unit_price!=null){d.price_basis==='save_up_to_ceiling'?est+=d.computed_unit_price:firm+=d.computed_unit_price}});
-    html+=`<div class="store-h" style="--c:${storeColor(ch)}"><h2>${esc(ch)} <span class="cnt">${items.length} item${items.length>1?'s':''}</span></h2><div class="tot">firm <b>${money(firm)}</b>${est?` + est. ≤ ${money(est)}`:''}</div></div>`;
-    if(deals.some(d=>d.chain===ch&&d.deal_type==='buy5_save1')){const b5=items.filter(({d})=>d.deal_type==='buy5_save1').length;
-      const elig=deals.filter(d=>d.chain===ch&&d.deal_type==='buy5_save1').length;
-      html+=`<div class="meter ${b5>=5?'hit':''}">Buy 5 Save $1: ${b5} of 5 ${b5>=5?'— you get $1 off each':`— ${5-b5} more participating item${5-b5>1?'s':''} to unlock`}<div class="bar">${[0,1,2,3,4].map(i=>`<i class="${i<b5?'on':''}"></i>`).join('')}</div><button class="btn q s" style="margin-top:8px" data-showb5="${esc(ch)}">See all ${elig} eligible ${esc(ch)} items</button></div>`}
+    const M=tripMath(items),T0=tripTotals(items,M);
+    html+=`<div class="store-h" style="--c:${storeColor(ch)}"><h2>${esc(ch)} <span class="cnt">${items.length} item${items.length>1?'s':''}</span></h2><div class="tot">${totLine(T0)}</div></div>`;
+    for(const ty of [...new Set(deals.filter(d=>d.chain===ch&&thr(d)).map(d=>d.deal_type))]){
+      const T=thr(deals.find(d=>d.chain===ch&&d.deal_type===ty)),b=M.cnt[ty]||0,elig=deals.filter(d=>d.chain===ch&&d.deal_type===ty).length,hit=b>=T.n;
+      html+=`<div class="meter ${hit?'hit':''}">${esc(T.label)}: ${Math.min(b,T.n)} of ${T.n} ${hit?'\u2014 discount applies':`\u2014 ${T.n-b} more participating item${T.n-b>1?'s':''} to unlock${b?'; until then these ring up at full price':''}`}<div class="bar">${Array.from({length:T.n},(_,i)=>`<i class="${i<b?'on':''}"></i>`).join('')}</div><button class="btn q s" style="margin-top:8px" data-showb5="${esc(ch)}" data-b5type="${esc(ty)}">See all ${elig} eligible ${esc(ch)} items</button></div>`}
     html+=items.map(({item,d})=>{const key=item.id+'|'+d.id,done=!!checks[key];if(!done)n++;
-      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' · '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${d.deal_type==='buy5_save1'?'<span class="b5">Buy 5 Save $1</span>':''}<br>${esc(d.restrictions)}</div></div><div class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'—':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)}</div></label>`}).join('');
+      const p=M.price(d),T=thr(d),short=T&&!M.met(d)&&p!==d.computed_unit_price;
+      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' \u00b7 '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}${limited(d)?' <span class="flag">'+esc(d.section)+'</span>':''}<br>${esc(d.restrictions)}${short?`<br><b>${money(d.computed_unit_price)} each once you have ${T.n} participating items</b>`:''}</div></div><div class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${p==null?'\u2014':(d.price_basis==='save_up_to_ceiling'?'\u2264 ':'')+money(p)}</div></label>`}).join('');
   }
   const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length) html+=`<div class="store-h plain"><h2>Not on sale this week</h2></div><div class="row sub">${unmatched.map(i=>esc(i.n)).join(', ')} — buy wherever you're already going.</div>`;
@@ -432,7 +459,8 @@ function renderData(){
   $('#listInfo').textContent=`${list.length} items on the list.`;
   const src=store.get('dm.dealsSource','built-in seed');
   const now=new Date(),stale=w.filter(([,v])=>v&&new Date(v.valid_to+'T23:59:59')<now).map(([ch,v])=>`${ch} ad expired ${v.valid_to}`);
-  $('#banner').innerHTML=stale.length?`<div class="banner">${stale.join(' · ')}. Prices shown are from an old ad — load this week's deals.json on the Data tab. Source: ${esc(src)}.</div>`:'';
+  const roll=store.get('dm.rollover',false)&&list.some(i=>i.buy)?`<div class="banner">New ads were loaded and your Shopping List still has last trip's items, now matched against the new prices. <button class="btn q s" data-roll="clear">Start a fresh list</button> <button class="btn q s" data-roll="keep">Keep it</button></div>`:'';
+  $('#banner').innerHTML=(stale.length?`<div class="banner">${stale.join(' · ')}. Prices shown are from an old ad — load this week's deals.json on the Data tab. Source: ${esc(src)}.</div>`:'')+roll;
   const md=s=>s?s.slice(5).replace(/^0/,'').replace('-0','-').replace('-','/'):'';const live=w.filter(([,v])=>v);
   const to=live.map(([,v])=>v.valid_to).sort().pop();$('#wk').textContent=live.length?`Ads through ${md(to)} · ${live.length} store${live.length>1?'s':''}`:'';
   $('#wkDetail').textContent=live.map(([ch,v])=>`${ch} ${md(v.valid_from)}–${md(v.valid_to)}`).join(' · ');
@@ -483,7 +511,7 @@ $('#listOut').addEventListener('click',e=>{
 $('#listOut').addEventListener('change',e=>{const id=e.target.dataset.kwin;if(!id) return;const it=list.find(i=>i.id===id);it.k=e.target.value;saveList();renderList();renderShop()});
 ['fStore','fSection','fType','fText'].forEach(id=>$('#'+id).addEventListener('input',()=>{renderDeals();$('#fToggle').classList.toggle('on',!!($('#fStore').value||$('#fSection').value||$('#fType').value))}));
 $('#fToggle').addEventListener('click',()=>{$('#fMore').hidden=!$('#fMore').hidden});
-$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-showb5]');if(!b)return;$('#fStore').value=b.dataset.showb5;$('#fSection').value='';$('#fType').value='buy5_save1';$('#fText').value='';$('#fMore').hidden=false;$('#fToggle').classList.add('on');renderDeals();document.querySelector('.tabs [data-t=deals]').click()});
+$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-showb5]');if(!b)return;$('#fStore').value=b.dataset.showb5;$('#fSection').value='';$('#fType').value=b.dataset.b5type||'';$('#fText').value='';$('#fMore').hidden=false;$('#fToggle').classList.add('on');renderDeals();document.querySelector('.tabs [data-t=deals]').click()});
 $('#shopOut').addEventListener('change',e=>{const k=e.target.dataset.ck;if(!k) return;checks[k]=e.target.checked;if(!checks[k])delete checks[k];saveList();renderShop()});
 $('#clearBuy').addEventListener('click',()=>{list.forEach(i=>i.buy=false);checks={};saveList();renderAll()});
 $('#clearChecks').addEventListener('click',()=>{checks={};saveList();renderShop()});
@@ -500,7 +528,7 @@ $('#adClear').addEventListener('click',()=>{if(!mine.length)return;if(!confirm(`
 $('#dlCsv').addEventListener('click',()=>dl('deals.csv','\ufeff'+toCsv(),'text/csv;charset=utf-8'));
 $('#dlJson').addEventListener('click',()=>dl('deals.json',JSON.stringify({schema:SCHEMA,ad_weeks:adWeeks,rows:deals.map(d=>SCHEMA.map(k=>d[k]??null))},null,1),'application/json'));
 $('#exportList').addEventListener('click',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(list,null,2)],{type:'application/json'}));a.download='list.json';a.click()});
-$('#listFile').addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j))throw new Error('list.json must be an array');list=j.map(x=>({n:x.n||x.name||String(x),k:x.k||'',id:x.id||Math.random().toString(36).slice(2)}));saveList();renderAll()}catch(err){alert('Could not load list: '+err.message)}e.target.value=''});
+$('#listFile').addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j))throw new Error('list.json must be an array');list=j.map(x=>({n:x.n||x.name||String(x),k:x.k||'',buy:!!x.buy,id:x.id||Math.random().toString(36).slice(2)}));saveList();renderAll()}catch(err){alert('Could not load list: '+err.message)}e.target.value=''});
 function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.replace(/^\ufeff/,'');
   for(let i=0;i<text.length;i++){const c=text[i];
     if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
@@ -513,6 +541,7 @@ function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.repla
   return rows.filter(r=>r.length>1).map(r=>{const o=Object.fromEntries(SCHEMA.map((k,j)=>[k,r[j]??'']));['regular_price','sale_price','coupon_discount','page','computed_unit_price'].forEach(k=>o[k]=num(o[k]));o.digital_coupon_required=bool(o.digital_coupon_required);['price_basis','deal_group_id'].forEach(k=>{if(o[k]==='')o[k]=null});return o})}
 $('#dealsFile').addEventListener('change',async e=>{const f=e.target.files[0];try{const txt=await f.text();const body=txt.replace(/^\ufeff/,'').trimStart();setDeals(/^[\[{]/.test(body)?JSON.parse(txt):parseCsv(txt),f.name)}catch(err){$('#banner').innerHTML=`<div class="banner bad">${esc(f.name)} was not loaded: ${esc(err.message)}. The previous deals are still in use.</div>`}e.target.value=''});
 $('#fetchDeals').addEventListener('click',fetchSite);
+$('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-roll]');if(!b)return;store.set('dm.rollover',false);if(b.dataset.roll==='clear'){list.forEach(i=>i.buy=false);checks={};prefs={};saveList()}renderAll()});
 async function fetchSite(){try{const r=await fetch('deals.json',{cache:'no-store'});if(!r.ok)throw new Error(r.status);setDeals(await r.json(),'deals.json on site');return true}catch{return false}}
 
 /* ---------- intros: open for the first 3 visits on this device, then collapsed ---------- */
@@ -522,17 +551,17 @@ const pmd=s=>s?esc(String(s).slice(5).replace(/^0/,'').replace('-0','-').replace
 function buildPrint(){
   let box=document.getElementById('printOut');
   if(!box){box=document.createElement('div');box.id='printOut';document.body.appendChild(box)}
-  const plan=planByStore();let gFirm=0,gEst=0,count=0,body='';
+  const plan=planByStore();let gFirm=0,gEst=0,gNp=0,count=0,body='';
   for(const ch of Object.keys(plan)){
     const items=plan[ch].filter(({item,d})=>!checks[item.id+'|'+d.id]);if(!items.length) continue;
-    let firm=0,est=0;items.forEach(({d})=>{if(d.computed_unit_price!=null){d.price_basis==='save_up_to_ceiling'?est+=d.computed_unit_price:firm+=d.computed_unit_price}});
-    gFirm+=firm;gEst+=est;count+=items.length;
-    let b5='';if(deals.some(d=>d.chain===ch&&d.deal_type==='buy5_save1')){const n=items.filter(({d})=>d.deal_type==='buy5_save1').length;
-      if(n) b5=`<div class="pb5">Buy 5 Save $1: ${n} of 5${n>=5?' — discount applies':` — prices assume 5; below that add $1 each`}</div>`}
-    body+=`<div class="pstore${items.length<=10?' keep':''}"><h2><span>${esc(ch)} <small>(${items.length})</small></span><small>firm ${money(firm)}${est?` + est. ≤ ${money(est)}`:''}</small></h2>${b5}<table>${items.map(({item,d})=>{
-      const ceil=d.price_basis==='save_up_to_ceiling';
-      const notes=[d.size,d.digital_coupon_required?'digital coupon':'',d.deal_type==='buy5_save1'?'Buy 5 Save $1':'',d.restrictions].filter(Boolean).map(esc).join(' · ');
-      return `<tr><td class="bx"><span></span></td><td><b>${esc(item.n)}</b><div class="dd">${String(d.product_name).trim().toLowerCase()===String(item.n).trim().toLowerCase()?notes:esc(d.product_name)+(notes?' — '+notes:'')}</div></td><td class="pr">${d.computed_unit_price==null?'—':(ceil?'≤ ':'')+money(d.computed_unit_price)}</td></tr>`}).join('')}</table></div>`;
+    const M=tripMath(plan[ch]),T0=tripTotals(items,M);
+    gFirm+=T0.firm;gEst+=T0.est;gNp+=T0.np;count+=items.length;
+    let b5='';for(const ty of Object.keys(M.cnt)){const T=thr(plan[ch].find(({d})=>d.deal_type===ty).d),c=M.cnt[ty];
+      b5+=`<div class="pb5">${esc(T.label)}: ${Math.min(c,T.n)} of ${T.n}${c>=T.n?' \u2014 discount applies':` \u2014 ${T.n-c} short, so these are listed at full price`}</div>`}
+    body+=`<div class="pstore${items.length<=10?' keep':''}"><h2><span>${esc(ch)} <small>(${items.length})</small></span><small>${totLine(T0).replace(/<\/?b>/g,'')}</small></h2>${b5}<table>${items.map(({item,d})=>{
+      const ceil=d.price_basis==='save_up_to_ceiling',p=M.price(d);
+      const notes=[d.size,d.digital_coupon_required?'digital coupon':'',thr(d)?thr(d).label:'',limited(d)?d.section:'',d.restrictions].filter(Boolean).map(esc).join(' \u00b7 ');
+      return `<tr><td class="bx"><span></span></td><td><b>${esc(item.n)}</b><div class="dd">${String(d.product_name).trim().toLowerCase()===String(item.n).trim().toLowerCase()?notes:esc(d.product_name)+(notes?' \u2014 '+notes:'')}</div></td><td class="pr">${p==null?'\u2014':(ceil?'\u2264 ':'')+money(p)}</td></tr>`}).join('')}</table></div>`;
   }
   const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length){count+=unmatched.length;body+=`<div class="pstore"><h2><span>Not on sale this week <small>(${unmatched.length})</small></span></h2><table>${unmatched.map(i=>`<tr><td class="bx"><span></span></td><td><b>${esc(i.n)}</b></td><td class="pr"></td></tr>`).join('')}</table></div>`}
@@ -540,7 +569,7 @@ function buildPrint(){
   const today=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   box.innerHTML=`<table class="pwrap"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td class="pbody"><h1>Shopping List</h1><div class="pmeta">Printed ${esc(today)}${live.length?' · Ads: '+live.map(([ch,v])=>`${esc(ch)} ${pmd(v.valid_from)}–${pmd(v.valid_to)}`).join(' · '):''}</div>`+
     (body||'<p>Nothing left to buy — every item is checked off.</p>')+
-    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}</div><div class="pnote">≤ = "save up to" ceiling price; actual may be lower. Items already checked off in the app are not printed.</div>`:'')+`</td></tr></tbody></table>`;
+    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}${gNp?` + ${gNp} not priced`:''}</div><div class="pnote">≤ = "save up to" ceiling price; actual may be lower. Items already checked off in the app are not printed.</div>`:'')+`</td></tr></tbody></table>`;
 }
 window.addEventListener('beforeprint',buildPrint); // covers Ctrl+P / browser menu too
 document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){buildPrint();window.print()}});
@@ -550,6 +579,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){build
   try{ if(saved) setDeals(saved,store.get('dm.dealsSource','saved')); else setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
   catch(err){ setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
   if(location.protocol.startsWith('http')) fetchSite(); // if a deals.json sits next to the page, prefer it
+  if('serviceWorker' in navigator&&location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{}); // lets the app open with no signal
 })();
 })();
 </script>
