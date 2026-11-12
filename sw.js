@@ -1,4 +1,3 @@
-js
 /* Deal Matcher offline support: always try the network first, fall back to the last copy saved on this device. */
 const CACHE='deal-matcher-v1';
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./deals.json'])).catch(()=>{}))});
