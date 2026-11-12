@@ -317,7 +317,7 @@ function byStore(item){
 }
 function chosen(item,chain,cands){
   const p=picks[item.id]?.[chain];
-  return (p&&cands.find(x=>x.d.id===p)?.d)||cands[0]?.d||null;
+  return (p&&(cands.find(x=>x.d.id===p)?.d||deals.find(d=>d.id===p&&d.chain===chain)))||cands[0]?.d||null;
 }
 function ambiguous(cands){return cands.length>1&&cands[1].k===cands[0].k&&cands[1].s>=cands[0].s-0.6}
 
@@ -361,7 +361,7 @@ function why(d){
 }
 const allStores=()=>[...new Set(deals.map(d=>d.chain))].sort();
 let myStores=store.get('dm.stores',null); // null = all
-const stores=()=>allStores().filter(s=>!myStores||myStores.includes(s));
+const stores=()=>{const a=allStores(),f=a.filter(s=>!myStores||myStores.includes(s));return f.length?f:a};
 
 /* ---------- render: list ---------- */
 function renderList(){
@@ -479,9 +479,10 @@ function addItems(names){let added=0;for(let n of names){n=n.trim().replace(/^[-
   const dup=list.find(i=>i.n.toLowerCase()===n.toLowerCase());if(dup){dup.buy=true;added++;continue} // already tracked: just put it on this week's shopping list
   list.push({n,k:'',buy:true,id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)});added++}
   saveList();renderList();renderShop();renderData();return added}
-function addPinned(name,deal){const n=(name||'').trim()||deal.product_name;let it=list.find(i=>i.n.toLowerCase()===n.toLowerCase());
+function addPinned(name,deal){let n=(name||'').trim()||deal.product_name;const same=x=>list.find(i=>i.n.toLowerCase()===x.toLowerCase());let it=same(n);
+  if(it&&it.buy){const cur=picks[it.id]?.[deal.chain];if(cur&&cur!==deal.id&&deals.some(d=>d.id===cur)){n=n+' ('+(deal.size||'other size')+')';it=same(n)}} // same name, different deal: keep both
   if(!it){it={n,k:'',id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)};list.push(it)}
-  it.buy=true;(picks[it.id]??={})[deal.chain]=deal.id;saveList();renderList();renderShop();renderData();renderDeals();return it}
+  it.buy=true;(picks[it.id]??={})[deal.chain]=deal.id;prefs[it.id]=deal.chain;saveList();renderList();renderShop();renderData();renderDeals();return it}
 function taRender(){const q=$('#newItem').value.trim(),box=$('#ta');if(q.length<2||!deals.length){box.hidden=true;return}
   const words=q.toLowerCase().split(/\s+/),last=words[words.length-1],base=words.slice(0,-1).join(' ');
   const pre=d=>tokens(d.product_name).some(w=>w.startsWith(last))||(deal=>false)(d);
@@ -491,7 +492,7 @@ function taRender(){const q=$('#newItem').value.trim(),box=$('#ta');if(q.length<
 $('#newItem').addEventListener('input',taRender);
 $('#newItem').addEventListener('focus',taRender);
 document.addEventListener('click',e=>{if(!e.target.closest('.add'))$('#ta').hidden=true});
-$('#ta').addEventListener('click',e=>{const b=e.target.closest('[data-ta]');if(!b)return;const d=deals.find(x=>x.id===b.dataset.ta);addPinned($('#newItem').value,d);$('#newItem').value='';$('#ta').hidden=true;$('#newItem').focus()});
+$('#ta').addEventListener('click',e=>{const b=e.target.closest('[data-ta]');if(!b)return;const d=deals.find(x=>x.id===b.dataset.ta);const typed=$('#newItem').value.trim();addPinned(score({n:typed,k:''},d)>=1.2?typed:d.product_name,d);$('#newItem').value='';$('#ta').hidden=true;$('#newItem').focus()});
 $('#addBtn').addEventListener('click',()=>{addItems([$('#newItem').value]);$('#newItem').value='';$('#ta').hidden=true;$('#newItem').focus()});
 $('#newItem').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#addBtn').click()}if(e.key==='Escape')$('#ta').hidden=true});
 $('#dealsOut').addEventListener('click',e=>{const b=e.target.closest('[data-plus]');if(!b)return;const d=deals.find(x=>x.id===b.dataset.plus);if(!d)return;
