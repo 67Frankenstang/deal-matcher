@@ -257,7 +257,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 
 /* ---------- data ---------- */
-const BUILD='Nov 12, 2026 \u00b7 build 12';
+const BUILD='Nov 12, 2026 \u00b7 build 13';
 const SCHEMA=["chain","product_name","size","regular_price","sale_price","unit","deal_type","coupon_discount","digital_coupon_required","page","computed_unit_price","price_basis","deal_group_id","row_role","restrictions","section"];
 let adWeeks={},deals=[];
 function normalizeDeals(raw){
@@ -422,7 +422,40 @@ async function probeAds(){if(!location.protocol.startsWith('http'))return;let fo
   await Promise.all(allStores().map(async ch=>{if(adFiles[ch])return;try{const r=await fetch(adSlug(ch),{method:'HEAD',cache:'no-store'});if(r.ok&&/pdf/i.test(r.headers.get('content-type')||'pdf')){adFiles[ch]=adSlug(ch);found=true}}catch{}}));
   if(found){renderList();renderDeals();renderShop();renderData()}}
 const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:q=>({url:'https://www.publix.com/search?searchTerm='+encodeURIComponent(q),label:'Find at Publix.com'})};
-function storeLink(d){const q=String(d.product_name||'').split(',')[0].replace(/\s+/g,' ').trim().slice(0,60),f=STORE_SITE[String(d.chain).toLowerCase()];
+/* What to type into the store's own search box for a deal.
+   Ad names list varieties ("Kroger Red, Green or Black Seedless Grapes"); cutting at the first comma searched "Kroger Red".
+   Two shapes: the product word comes last and is shared ("Red, Green or Black Seedless Grapes" -> keep the varieties and the product word),
+   or it comes first and the rest are alternates/descriptors ("College Inn Broth or Stock", "Butterball Turkey, Frozen" -> first part). */
+const HOUSE=/^(Kroger|Private Selection|Simple Truth Organic|Simple Truth|Big K|Heritage Farm|Comforts|Publix|GreenWise|Aldi)\s+(?=\S)/i;
+const wc=s=>s.split(' ').filter(w=>/[a-z0-9]/i.test(w)).length;      // words, ignoring "&" and "+"
+function searchQuery(d,allVarieties){
+  let n=String(d.product_name||'').replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
+  const pack=/^\d+-Pack\s+/i.test(n);                                 // Publix: "12-Pack Coca-Cola Products"
+  if(pack)n=n.replace(/^\d+-Pack\s+/i,'').replace(/\s+(Soft Drink\s+)?Products$/i,'');
+  n=n.split(';')[0].trim();
+  const c=n.indexOf(':');                                             // "Holiday Meal: Butterball Bone-In Turkey" / "Tyson Chicken Protein Cup: Bites or Nuggets"
+  if(c>0){const a=n.slice(0,c).trim(),b=n.slice(c+1).trim();n=wc(a)>=3||!b?a:b}
+  n=n.replace(/\s+or (Other|More|Select|Assorted) Variet(y|ies)\b.*$/i,'');
+  const segs=n.split(/\s*,\s*/).filter(Boolean),J=/(^|\s)(or|and)\s/i,j=segs.findIndex(s=>J.test(s));
+  /* the variety list ends at the first "or"; anything after the next comma is a descriptor ("..., Publix USDA Choice Beef") */
+  const alts=(j<0?segs.slice(0,1):segs.slice(0,j+1).join(', ').split(/\s*,\s*(?:(?:or|and)\s+)?|\s+(?:or|and)\s+/i)).map(s=>s.trim()).filter(Boolean);
+  let q=alts[0]||n;
+  if(alts.length>1){
+    const first=alts[0],last=alts[alts.length-1],mids=alts.slice(1,-1),lw=last.split(' ');
+    const hb=(first.match(HOUSE)||[''])[0].trim(),bare=hb?first.slice(hb.length).trim():first;
+    if(wc(bare)<wc(last)&&mids.every(m=>wc(m)<wc(last))){            // product word is at the end of the list
+      const k=Math.max(1,Math.min(lw.length-1,mids.length?Math.max(...mids.map(m=>m.split(' ').length)):bare.split(' ').length));
+      const head=lw.slice(k).join(' ');                               // "Black Seedless Grapes" -> "Seedless Grapes"
+      if(head&&!/^(for|with|of|in|on|per|to|a|an|the|&|\+)$/i.test(lw[k]))
+        q=allVarieties?alts.join(' '):first+' '+head;                 // Kroger.com ranks by relevance, so naming every variety finds them all; elsewhere search the first one
+    }
+  }
+  q=q.replace(/\s+\d[\d.\-]*\s*-?(oz|ct|lbs?|pk)\b.*$/i,'');          // "Starbucks Coffee 10-12 oz Bag" -> "Starbucks Coffee"
+  const sec=String(d.section||'');                                    // a bare brand in the drinks aisle ("Cook's", "Bud") needs its aisle
+  if(/wine|beer|brew|bottle/i.test(sec)&&/\b(ml|liter)\b/i.test(String(d.size||''))&&!/wine|champagne|prosecco|brut|ros[eé]\b/i.test(q))q+=' wine';
+  if(q.length>60)q=q.slice(0,61).replace(/\s+\S*$/,'');
+  return q.trim()}
+function storeLink(d){const ch=String(d.chain).toLowerCase(),q=searchQuery(d,ch==='kroger'),f=STORE_SITE[ch];
   return f?f(q):{url:'https://www.google.com/search?q='+encodeURIComponent(d.chain+' '+q),label:'Search the web'}}
 const STORE_HOME={kroger:['https://www.kroger.com/','Kroger.com'],publix:['https://www.publix.com/','Publix.com']};
 function dealLinks(d,short){const f=adFile(d.chain),a=[];
