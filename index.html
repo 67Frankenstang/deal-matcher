@@ -102,6 +102,8 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
 .deal .p .was{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:line-through;text-align:right}
 #fBest.on{background:var(--ink);color:#fff}
 #fText{min-width:80px}
+.lk{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px}
+.lk a{font-size:15px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:4px 0}
 .tag .store{flex-wrap:wrap;row-gap:4px;overflow:visible}
 .tag .store .sv,.tag .store .sim{margin-left:0}
 /* shop tab */
@@ -168,7 +170,7 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
 </section>
 
 <section id="t-deals">
-  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, grouped by store and ad section. Tap <b>Best savings</b> to rank your main store's deals by percent off (only deals where the ad prints a regular price can be ranked). Tap a section to open it, or search to see matches from every section at once. Search is broad on purpose: <i>turkey</i> finds every deal that mentions turkey, and everyday names work (<i>coke</i> finds Coca-Cola, <i>soda</i> finds soft drinks). Filters narrow by store, section, or deal type (Buy 5 Save $1, digital coupon, BOGO). Tap <b>+ Add to list</b> on anything you want: it goes straight on this week's Shopping List under that store. Tap the button again to take it off.</p>
+  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, grouped by store and ad section. Tap <b>Best savings</b> to rank your main store's deals by percent off (only deals where the ad prints a regular price can be ranked). Tap a section to open it, or search to see matches from every section at once. Search is broad on purpose: <i>turkey</i> finds every deal that mentions turkey, and everyday names work (<i>coke</i> finds Coca-Cola, <i>soda</i> finds soft drinks). Filters narrow by store, section, or deal type (Buy 5 Save $1, digital coupon, BOGO). Each deal has links: <b>See in ad</b> opens the printed ad page it came from (when the ad file has been added to the site), and <b>Find at Kroger.com</b> opens the store's website so you can check the live price. Tap <b>+ Add to list</b> on anything you want: it goes straight on this week's Shopping List under that store. Tap the button again to take it off.</p>
   <details><summary>How to read a price</summary><p>A black price is printed in the ad. An amber <b>≤</b> price is a ceiling worked out from "save up to" wording — you'll pay that or less. <span class="dc">DC</span> means clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off, so there's nothing to calculate.</p></details></div></details>
   <div class="filters"><input id="fText" placeholder="Search: turkey, coke, eggs"><button class="btn q" id="fBest" aria-pressed="false">Best savings</button><button class="btn q" id="fToggle">Filters</button></div>
   <div class="filters" id="fMore" hidden>
@@ -407,6 +409,20 @@ function lineCost(d,M){
   const est=ceil||under;return{kind:est?'est':'firm',amt:p,txt:(est?'≤ ':'')+money(p),note:under?'until '+thr(d).n+' items':''}}
 function tripTotals(items,M){let firm=0,est=0,np=0,lb=0;items.forEach(({d})=>{const L=lineCost(d,M);if(L.kind==='none')np++;else if(L.kind==='lb')lb++;else if(L.kind==='est')est+=L.amt;else firm+=L.amt});return{firm,est,np,lb}}
 const totLine=t=>{const a=[];if(t.firm||!(t.est||t.lb||t.np))a.push(`firm <b>${money(t.firm)}</b>`);if(t.est)a.push(`est. \u2264 <b>${money(t.est)}</b>`);if(t.lb)a.push(`${t.lb} by the pound`);if(t.np)a.push(`${t.np} not priced`);return a.join(' + ')};
+/* ---------- links out: the printed ad page, and the store's own website ---------- */
+let adFiles={};                                   // store -> ad PDF found beside this page (kroger.pdf, publix.pdf, ...)
+const adSlug=ch=>String(ch).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.pdf';
+const adFile=ch=>(adWeeks[ch]&&adWeeks[ch].ad_pdf)||adFiles[ch]||null;
+async function probeAds(){if(!location.protocol.startsWith('http'))return;let found=false;
+  await Promise.all(allStores().map(async ch=>{if(adFiles[ch])return;try{const r=await fetch(adSlug(ch),{method:'HEAD',cache:'no-store'});if(r.ok&&/pdf/i.test(r.headers.get('content-type')||'pdf')){adFiles[ch]=adSlug(ch);found=true}}catch{}}));
+  if(found){renderDeals();renderShop();renderData()}}
+const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:()=>({url:'https://www.publix.com/savings/all-deals',label:'Publix deals page'})};
+function storeLink(d){const q=String(d.product_name||'').split(',')[0].replace(/\s+/g,' ').trim().slice(0,60),f=STORE_SITE[String(d.chain).toLowerCase()];
+  return f?f(q):{url:'https://www.google.com/search?q='+encodeURIComponent(d.chain+' '+q),label:'Search the web'}}
+function dealLinks(d){const f=adFile(d.chain),a=[];
+  if(f&&d.page)a.push(`<a href="${esc(f)}#page=${esc(d.page)}" target="_blank" rel="noopener">See in ad \u00b7 p.${esc(d.page)}</a>`);
+  const s=storeLink(d);a.push(`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`);
+  return `<div class="lk">${a.join('')}</div>`}
 /* ---------- savings: only where the ad prints a regular (or before-coupon) price to measure against ---------- */
 function sv(d){const r=d&&d.regular_price,c=d&&d.computed_unit_price;if(r==null||c==null||!(r>c))return null;return{pct:Math.round((1-c/r)*100),amt:Math.round((r-c)*100)/100}}
 const svBadge=d=>{const s=sv(d);return s&&s.pct>=1?`<span class="sv">Save ${s.pct}%</span>`:''};
@@ -478,14 +494,14 @@ function renderDeals(){
       (top.map(d=>{const on=onB.has(d.chain+'|'+d.id),s=sv(d);return `<div class="row deal">
     <div><span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} <span class="sv">Save ${s.pct}% · ${money(s.amt)}</span></div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}<div class="was">was ${money(d.regular_price)}</div></div>
-    <div class="r">${esc(d.restrictions)}</div>
+    <div class="r">${esc(d.restrictions)}</div>${dealLinks(d)}
     <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`}).join('')||'<div class="empty">No deals with a printed regular price match.</div>');
     $('#nDeals').textContent=`${deals.length} this week`;return}
   const onIds=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onIds.add(ch+'|'+id))});
   const row=d=>{const on=onIds.has(d.chain+'|'+d.id);return `<div class="row deal">
     <div><span class="sub">p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} ${svBadge(d)}</div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'<span class="sub">no unit price</span>':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}</div>
-    <div class="r">${esc(d.restrictions)}</div>
+    <div class="r">${esc(d.restrictions)}</div>${dealLinks(d)}
     <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`};
   const by=new Map();homeFirst(allStores()).forEach(s=>{if(rows.some(d=>d.chain===s))by.set(s,new Map())});rows.forEach(d=>{if(!by.has(d.chain))by.set(d.chain,new Map());const m=by.get(d.chain);if(!m.has(d.section))m.set(d.section,[]);m.get(d.section).push(d)});
   const md=s=>s?s.slice(5).replace(/^0/,'').replace('-0','-').replace('-','/'):'';
@@ -536,7 +552,7 @@ function renderShop(){
       html+=`<div class="meter ${hit?'hit':''}">${esc(T.label)}: ${Math.min(b,T.n)} of ${T.n} ${hit?'\u2014 discount applies':`\u2014 ${T.n-b} more participating item${T.n-b>1?'s':''} to unlock${b?'; until then these ring up at full price':''}`}<div class="bar">${Array.from({length:T.n},(_,i)=>`<i class="${i<b?'on':''}"></i>`).join('')}</div><button class="btn q s" style="margin-top:8px" data-showb5="${esc(ch)}" data-b5type="${esc(ty)}">See all ${elig} eligible ${esc(ch)} items</button></div>`}
     html+=items.map(({item,d})=>{const key=item.id+'|'+d.id,done=!!checks[key];if(!done)n++;
       const p=M.price(d),T=thr(d),short=T&&!M.met(d)&&p!==d.computed_unit_price,L=lineCost(d,M),g=getFree(d);
-      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' \u00b7 '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}${limited(d)?' <span class="flag">'+esc(d.section)+'</span>':''}<br>${esc(d.restrictions)}${short?`<br><b>${money(d.computed_unit_price)} each once you have ${T.n} participating items</b>`:''}${L.kind==='lb'?'<br><b>Sold by the pound: cost depends on the weight you pick, so it is left out of the total.</b>':''}${g&&L.kind!=='none'?`<br><b>Price shown is for all ${g.n+g.m} (${money(p)} each). Buying fewer may ring up at full price.</b>`:''}</div></div><div class="pr ${L.kind==='est'?'ceil':''}">${L.txt}${L.note?`<small>${esc(L.note)}</small>`:''}</div><button type="button" class="iconb" data-rm="${item.id}" title="Take off the shopping list">×</button></label>`}).join('');
+      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' \u00b7 '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}${limited(d)?' <span class="flag">'+esc(d.section)+'</span>':''}<br>${esc(d.restrictions)}${short?`<br><b>${money(d.computed_unit_price)} each once you have ${T.n} participating items</b>`:''}${L.kind==='lb'?'<br><b>Sold by the pound: cost depends on the weight you pick, so it is left out of the total.</b>':''}${g&&L.kind!=='none'?`<br><b>Price shown is for all ${g.n+g.m} (${money(p)} each). Buying fewer may ring up at full price.</b>`:''}${dealLinks(d)}</div></div><div class="pr ${L.kind==='est'?'ceil':''}">${L.txt}${L.note?`<small>${esc(L.note)}</small>`:''}</div><button type="button" class="iconb" data-rm="${item.id}" title="Take off the shopping list">×</button></label>`}).join('');
   }
   const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length) html+=`<div class="store-h plain"><h2>Not on sale this week</h2></div><div class="row sub">${unmatched.map(i=>esc(i.n)).join(', ')} — buy wherever you're already going.</div>`;
@@ -548,7 +564,7 @@ function renderShop(){
 /* ---------- render: data ---------- */
 function renderData(){
   const w=Object.entries(adWeeks);
-  $('#adInfo').innerHTML=w.length?w.map(([ch,v])=>`<b>${esc(ch)}</b>: ${v?`${esc(v.valid_from)} to ${esc(v.valid_to)}${v.extended_page_valid_to?' (some items to '+esc(v.extended_page_valid_to)+')':''}${v.store?'<br><span class=sub>'+esc(v.store)+'</span>':''}`:'no ad loaded'}`).join('<br>'):`${deals.length} rows loaded, no ad dates supplied.`;
+  $('#adInfo').innerHTML=w.length?w.map(([ch,v])=>`<b>${esc(ch)}</b>: ${v?`${esc(v.valid_from)} to ${esc(v.valid_to)}${v.extended_page_valid_to?' (some items to '+esc(v.extended_page_valid_to)+')':''}${v.store?'<br><span class=sub>'+esc(v.store)+'</span>':''}<br><span class=sub>${adFile(ch)?'Printed ad linked: every deal shows "See in ad".':'No printed ad file on the site. To get "See in ad" links, add the ad PDF beside this page named <code>'+esc(adSlug(ch))+'</code>.'}</span>`:'no ad loaded'}`).join('<br>'):`${deals.length} rows loaded, no ad dates supplied.`;
   {const w=list.filter(i=>!i.adhoc).length,o=list.length-w;$('#listInfo').textContent=`${w} item${w===1?'':'s'} on Compare Deals${o?`, plus ${o} one-off deal${o===1?'':'s'} on this week's Shopping List`:''}.`}
   const src=store.get('dm.dealsSource','built-in seed');
   const now=new Date(),stale=w.filter(([,v])=>v&&new Date(v.valid_to+'T23:59:59')<now).map(([ch,v])=>`${ch} ad expired ${v.valid_to}`);
@@ -640,7 +656,7 @@ function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.repla
   const num=v=>v===''?null:Number(v),bool=v=>String(v).toLowerCase()==='true';
   return rows.filter(r=>r.length>1).map(r=>{const o=Object.fromEntries(SCHEMA.map((k,j)=>[k,r[j]??'']));['regular_price','sale_price','coupon_discount','page','computed_unit_price'].forEach(k=>o[k]=num(o[k]));o.digital_coupon_required=bool(o.digital_coupon_required);['price_basis','deal_group_id'].forEach(k=>{if(o[k]==='')o[k]=null});return o})}
 $('#dealsFile').addEventListener('change',async e=>{const f=e.target.files[0];try{const txt=await f.text();const body=txt.replace(/^\ufeff/,'').trimStart();setDeals(/^[\[{]/.test(body)?JSON.parse(txt):parseCsv(txt),f.name)}catch(err){$('#banner').innerHTML=`<div class="banner bad">${esc(f.name)} was not loaded: ${esc(err.message)}. The previous deals are still in use.</div>`}e.target.value=''});
-$('#fetchDeals').addEventListener('click',fetchSite);
+$('#fetchDeals').addEventListener('click',async()=>{await fetchSite();adFiles={};probeAds()});
 $('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-roll]');if(!b)return;store.set('dm.rollover',false);if(b.dataset.roll==='clear'){list.forEach(i=>i.buy=false);checks={};prefs={};prune();saveList()}renderAll()});
 async function fetchSite(){try{const r=await fetch('deals.json',{cache:'no-store'});if(!r.ok)throw new Error(r.status);setDeals(await r.json(),'deals.json on site');return true}catch{return false}}
 
@@ -679,6 +695,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){build
   try{ if(saved) setDeals(saved,store.get('dm.dealsSource','saved')); else setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
   catch(err){ setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
   if(location.protocol.startsWith('http')) await fetchSite(); // if a deals.json sits next to the page, prefer it
+  probeAds();
   /* one-time clean-up: earlier versions left every "+ Add to list" deal on Compare Deals */
   if(!store.get('dm.mig2',false)){store.set('dm.mig2',true);
     list.forEach(i=>{if(i.adhoc||i.k)return;const ids=Object.values(picks[i.id]||{});const d=deals.find(x=>ids.includes(x.id)&&(i.n===x.product_name||i.n.startsWith(x.product_name+' (')));if(d)i.adhoc=true});
