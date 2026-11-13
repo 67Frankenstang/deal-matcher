@@ -90,6 +90,20 @@ section[hidden]{display:none}
 .deal .p.ceil{color:var(--amber)}
 .deal .p .u{font-size:12px;font-weight:600}
 .deal .r{grid-column:1/-1;font-size:15px;line-height:1.4;color:var(--ink)}
+details.grp{margin:0 0 8px;border:1px solid var(--line);border-radius:var(--r2);background:var(--card);overflow:hidden}
+details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:13px 12px;font-weight:700;font-size:17px}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary::before{content:'▸';color:var(--ink2);width:14px}
+details.grp[open]>summary::before{content:'▾'}
+details.grp>summary .cnt{margin-left:auto;font-weight:500;font-size:14px;color:var(--ink2)}
+details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}
+.sv{display:inline-block;background:#e6f4ea;color:#17602b;border:1px solid #b7dcc0;border-radius:99px;font-size:12px;font-weight:700;padding:1px 8px;white-space:nowrap}
+.sim{display:inline-block;border:1px dashed var(--line);color:var(--ink2);border-radius:99px;font-size:11px;font-weight:600;padding:0 7px;margin-left:4px;white-space:nowrap}
+.deal .p .was{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:line-through;text-align:right}
+#fBest.on{background:var(--ink);color:#fff}
+#fText{min-width:80px}
+.tag .store{flex-wrap:wrap;row-gap:4px;overflow:visible}
+.tag .store .sv,.tag .store .sim{margin-left:0}
 /* shop tab */
 .store-h{display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px;background:var(--c,var(--ink2));color:#fff;border-radius:var(--r2);padding:10px 12px}
 .store-h h2{font-size:18px;margin:0}.store-h .cnt{font-weight:500;font-size:14px;opacity:.9;margin-left:6px}
@@ -100,7 +114,7 @@ section[hidden]{display:none}
 .ck input{width:22px;height:22px;margin-top:2px;flex:none}
 .ck.done{opacity:.45}.ck.done .t{text-decoration:line-through}
 .ck .t{font-weight:600;font-size:17px}.ck .d{font-size:15px;line-height:1.4;color:var(--ink)}
-.ck .pr{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ck .pr{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}.ck .pr small{display:block;font-weight:500;font-size:12px;color:var(--ink2)}.ck .iconb{flex:none;margin:-2px -6px 0 -4px}
 .ck .pr.ceil{color:var(--amber)}
 .meter{margin:0 0 8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r2);font-size:15px}
 .meter .bar{display:flex;gap:4px;margin-top:6px}
@@ -147,16 +161,16 @@ section[hidden]{display:none}
 <div id="banner"></div>
 
 <section id="t-list" hidden>
-  <details class="intro"><summary><b>Compare Deals — the items you keep an eye on, every store side by side</b><span class="hint">tap for help</span></summary><div class="body"><p>This is your standing list of things you buy: it stays week to week so you can see when they go on sale. Each item shows one price tag per store, cheapest first. Nothing here goes on your Shopping List until you tap <b>Buy here</b> on one of its store tags — that adds the item and files it under that store. Tap the same button again to take it off the Shopping List. If several deals fit, a "choose" list appears — pick the right one and the app remembers.</p>
+  <details class="intro"><summary><b>Compare Deals — the items you keep an eye on, every store side by side</b><span class="hint">tap for help</span></summary><div class="body"><p>This is your standing list of things you buy: it stays week to week so you can see when they go on sale. Each item shows one price tag per store, your main store first. The other stores' tags are marked <b>similar item</b>: they are the closest deal that store has, often a different brand or size, so treat them as a reference, not a like-for-like price. A green <b>Save %</b> badge appears when the ad prints a regular price to measure against. Nothing here goes on your Shopping List until you tap <b>Buy here</b> on one of its store tags — that adds the item and files it under that store. Tap the same button again to take it off the Shopping List. If several deals fit, a "choose" list appears — pick the right one and the app remembers.</p>
   <details><summary>Tips for better matches</summary><p>Name things the way ads do: "chicken breast," not "chicken." Tap the pencil ✎ to add a keyword like <i>boneless</i>, or a minus word like <i>-broth</i> to rule something out. Gray "not in this week's ad" is information, not an error — the item stays on your list for next week.</p></details></div></details>
   <div class="add sticky"><input id="newItem" placeholder="Add an item, e.g. ground beef" autocomplete="off"><button class="btn" id="addBtn">Add</button><div id="ta" class="ta" hidden></div></div>
   <div id="listOut"></div>
 </section>
 
 <section id="t-deals">
-  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, in one place. Filter by store, ad section, or deal type (Buy 5 Save $1, digital coupon, BOGO), or search by name. Then tap <b>+ Add to list</b> on anything you want. That puts it straight on your Shopping List under that store (and on Compare Deals so you can track it). Tap the button again to take it off.</p>
+  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, grouped by store and ad section. Tap <b>Best savings</b> to rank your main store's deals by percent off (only deals where the ad prints a regular price can be ranked). Tap a section to open it, or search by name to see matches from every section at once. Filters narrow by store, section, or deal type (Buy 5 Save $1, digital coupon, BOGO). Tap <b>+ Add to list</b> on anything you want: it goes straight on this week's Shopping List under that store. Tap the button again to take it off.</p>
   <details><summary>How to read a price</summary><p>A black price is printed in the ad. An amber <b>≤</b> price is a ceiling worked out from "save up to" wording — you'll pay that or less. <span class="dc">DC</span> means clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off, so there's nothing to calculate.</p></details></div></details>
-  <div class="filters"><input id="fText" placeholder="Search deals"><button class="btn q" id="fToggle">Filters</button></div>
+  <div class="filters"><input id="fText" placeholder="Search deals"><button class="btn q" id="fBest" aria-pressed="false">Best savings</button><button class="btn q" id="fToggle">Filters</button></div>
   <div class="filters" id="fMore" hidden>
     <select id="fStore"><option value="">All stores</option></select>
     <select id="fSection"><option value="">All sections</option></select>
@@ -166,7 +180,7 @@ section[hidden]{display:none}
 </section>
 
 <section id="t-shop" hidden>
-  <details class="intro"><summary><b>Shopping List — only what you've decided to buy this week</b><span class="hint">tap for help</span></summary><div class="body"><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under the store where it's cheapest by unit price (or the store you chose with Buy here). Items you chose that aren't in any ad this week are listed at the bottom under "Not on sale this week" so you don't forget them. Check things off in the aisle; checked items dim and drop out of the count. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (ceiling prices). When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
+  <details class="intro"><summary><b>Shopping List — only what you've decided to buy this week</b><span class="hint">tap for help</span></summary><div class="body"><p>Items get here two ways: <b>+ Add to list</b> on Weekly Deals, or <b>Buy here</b> on a store tag in Compare Deals. Each is placed under your main store (set on App Data), or the store you chose with Buy here. Items you chose that aren't in any ad this week are listed at the bottom under "Not on sale this week" so you don't forget them. Check things off in the aisle; checked items dim and drop out of the count. Totals per store are split into <b>firm</b> (printed prices) and <b>estimated ≤</b> (the most you'd pay: ceiling prices, and buy-more deals you haven't filled yet). Meat and produce sold <b>by the pound</b> show their per-pound price and are left out of the total, because the cost depends on the weight you pick. Buy-one-get-one and similar deals are priced for the whole set. Tap × on a line to take it off the list. When the trip's done, "Clear shopping list" on App Data empties this without losing your Compare Deals items.</p>
   <details><summary>What the buy-more-save-more meter means</summary><p>Some stores discount each item when you buy a set number of participating items together (Buy 5 Save $1, Buy 3 Save $2, Buy 5 Pay 99¢ and so on). The meter counts how many are in that store's section; tap <b>See all eligible items</b> to jump to the full list and add more. Eligible items carry a yellow badge like <span class="b5">Buy 5 Save $1</span> everywhere in the app. Until the meter is full, those items and the store total are shown at full price; once it fills, they drop to the deal price.</p></details></div></details>
   <div id="shopOut"></div>
 </section>
@@ -175,7 +189,7 @@ section[hidden]{display:none}
   <details class="intro"><summary><b>App Data — settings, your list, and the raw numbers</b><span class="hint">tap for help</span></summary><div class="body"><p>Choose which stores you shop, paste in a list, add a deal the ad didn't have, or download this week's data as a spreadsheet. Everything on this page stays on this device.</p></div></details>
   <div class="card"><h2>How this app works</h2>
     <p>Every week, the ads from our stores are turned into one data file called <code>deals.json</code>. This app reads that file and matches the deals against your shopping list. There is no login and no server: your list, your checkmarks, and your store choices live only on the phone or computer you're using right now.</p>
-    <p><b>The four tabs:</b> <b>Weekly Deals</b> is everything in this week's ads — tap <b>+ Add to list</b> on anything you want. <b>Compare Deals</b> is your standing watch list — items you buy regularly, with every store's price side by side, cheapest first; nothing goes to the Shopping List from here until you tap <b>Buy here</b> on a store tag. <b>Shopping List</b> is this week's trip: only the items you chose, sorted into one section per store, with checkboxes and running totals. <b>App Data</b> is this page.</p>
+    <p><b>The four tabs:</b> <b>Weekly Deals</b> is everything in this week's ads — tap <b>+ Add to list</b> on anything you want. <b>Compare Deals</b> is your standing watch list — items you buy regularly, with every store's deal side by side, your main store first; nothing goes to the Shopping List from here until you tap <b>Buy here</b> on a store tag. <b>Shopping List</b> is this week's trip: only the items you chose, sorted into one section per store, with checkboxes and running totals. <b>App Data</b> is this page.</p>
     <p><b>Reading a price:</b> a solid yellow tag is a price printed in the ad. An amber tag with <b>≤</b> is a ceiling worked out from "save up to" wording — the shelf price may be lower, never higher. <span class="dc">DC</span> means you must clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off with no base price, so nothing can be calculated.</p>
   </div>
   <div class="card"><h2>This week's ads</h2><p id="adInfo"></p>
@@ -186,7 +200,7 @@ section[hidden]{display:none}
     </details>
   </div>
   <div class="card"><h2>Your items</h2><p id="listInfo"></p>
-    <p><b>Two lists, one set of items.</b> Everything you add is tracked on <b>Compare Deals</b> week after week (your watch list). Only the items you've marked with <b>Buy here</b> or <b>+ Add to list</b> appear on the <b>Shopping List</b> (this week's trip). Removing an item with the × on Compare Deals deletes it from both.</p>
+    <p><b>Two lists, one set of items.</b> Everything you add is tracked on <b>Compare Deals</b> week after week (your watch list). Only the items you've marked with <b>Buy here</b> or <b>+ Add to list</b> appear on the <b>Shopping List</b> (this week's trip). A deal added with <b>+ Add to list</b> is a one-off: it stays on the Shopping List only and is not added to Compare Deals. Removing an item with the × on Compare Deals deletes it from both.</p>
     <p><b>Adding items:</b> type one item at a time on the Compare Deals tab, or paste a whole list below (one item per line — copied from Notes, a text, or another app) and press Add pasted lines. Anything you type or paste goes straight onto this week's Shopping List; typing an item that's already tracked just puts it on this week's trip. Category headings like PRODUCE are skipped automatically.</p>
     <p><b>Fastest way to add:</b> start typing on the Compare Deals tab and a dropdown shows this week's matching deals across every store. Tap one and it's added to your Shopping List with that exact deal pinned. Or browse the Weekly Deals tab and tap <b>+ Add to list</b> on anything you want. Either way, the tag for the store you're buying at lights up on Compare Deals; tap a different store's <b>Buy here</b> to switch, or the lit one to take it off the trip.</p>
 <p><b>Getting better matches:</b> tap the pencil ✎ next to an item and add a keyword or two, like <i>boneless</i> or <i>80% lean</i>. Put a minus in front of a word to rule things out: <i>chicken</i> with <i>-broth -wings</i> stops matching soup and wings. When more than one deal fits, a "choose" list appears under the item; it remembers your pick.</p>
@@ -195,7 +209,7 @@ section[hidden]{display:none}
     <p><b>After a shopping trip:</b> <b>Uncheck everything</b> clears the checkmarks but keeps the trip; <b>Clear shopping list (keep items)</b> empties this week's Shopping List while leaving every item on Compare Deals for next week.</p>
     <p><b>Moving your list to another device:</b> Download list.json here, send the file to yourself, then Load list.json on the other device. Your list does not sync on its own.</p>
   </div>
-  <div class="card"><h2>My stores</h2><p>Only shop at one or two of these? Untick the others and they disappear from Compare Deals, Shopping List totals and best-price picks on this device. The Weekly Deals tab still shows every store.</p><div class="stack" id="storeToggles"></div></div>
+  <div class="card"><h2>My stores</h2><p>Only shop at one or two of these? Untick the others and they disappear from Compare Deals, and Shopping List totals on this device. The Weekly Deals tab still shows every store.</p><div class="stack" id="storeToggles"></div><p style="margin-top:12px"><label for="homeSel"><b>Main store</b></label> <select id="homeSel"></select><br><span class="sub">Shown first on every tab. Items you add by name go on this store's Shopping List section unless you tap Buy here on another store.</span></p></div>
   <div class="card"><h2>Add a deal the ad didn't have</h2><p>Saw a good price on a shelf, or shop a store nobody parsed? Add it here and it's compared like any other deal. Type a new store name (say, Walmart) and that store simply appears. Store, product and price are required; the rest is optional.</p>
     <div class="stack" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <input id="adStore" placeholder="Store (e.g. Walmart)" list="storeList"><datalist id="storeList"></datalist>
@@ -214,7 +228,7 @@ section[hidden]{display:none}
     <p><b>If you edit the spreadsheet and load it back:</b> keep all 16 columns in the same order, don't rename the header row, and save as CSV. Prices are plain numbers (2.99, not $2.99). A blank price means "no price could be calculated" — it is not zero, so don't sum that column without filtering blanks.</p>
   </div>
   <div class="card"><h2>What this app can't do</h2>
-    <p>It doesn't know your store's shelf prices — only what the printed ad says, and ads can differ between stores of the same chain. It doesn't sync between devices or people. It doesn't apply store-brand coupons automatically; DC items still need clipping in the store's own app. Matching is by words, so "chicken" will match chicken broth as well as chicken breast — add a keyword or use the choose list. And the ceiling (≤) prices are the most you'd pay, not a quote.</p>
+    <p>It doesn't know your store's shelf prices — only what the printed ad says, and ads can differ between stores of the same chain. It doesn't sync between devices or people. It doesn't apply store-brand coupons automatically; DC items still need clipping in the store's own app. Matching is by whole words in the product name, so a short item like "chicken" can match several cuts — add a keyword or use the choose list — and a product the ad names differently ("dishwashing liquid" for dish soap) can be missed. Store-to-store tags show similar items, which may be different brands or sizes, so the app no longer picks a cheapest store for you. Savings percentages exist only where the ad prints a regular or before-coupon price. Trip totals leave out anything sold by the pound. And the ceiling (≤) prices are the most you'd pay, not a quote.</p>
   </div>
 </section>
 </div>
@@ -280,33 +294,63 @@ const saveList=()=>{store.set('dm.list',list);store.set('dm.picks',picks);store.
 
 /* ---------- matching (deterministic, no AI) ---------- */
 const STOP=new Set(['or','and','of','the','a','with','in','select','varieties','per','ct','oz','lb','fl','pack','package','each','ea','usda','choice','fresh','kroger','publix','private','selection','simple','truth','brand','family','size','up','to']);
-const SYN={hamburger:'ground beef',mince:'ground beef',chicken:'chicken perdue',franks:'franks hot dogs',hotdog:'franks hot dogs',hotdogs:'franks hot dogs',mayo:'mayonnaise',ketchup:'ketchup catsup',soda:'coca-cola pepsi canada dry',pop:'coca-cola pepsi',cheese:'cheese singles',yogurt:'yogurt oikos',detergent:'detergent tide gain',towels:'towels',bbq:'barbecue',water:'water purified'};
-const stem=w=>w.length>3&&w.endsWith('s')&&!w.endsWith('ss')?w.slice(0,-1):w;
-const SYNS=Object.fromEntries(Object.entries(SYN).map(([k,v])=>[stem(k),v]));
-function tokens(s){return String(s||'').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9%& -]/g,' ').split(/[\s,/&]+/).filter(w=>w&&!STOP.has(w)).map(stem)}
-function expand(s){return tokens(s).flatMap(t=>SYNS[t]?[t,...tokens(SYNS[t])]:[t])}
+const stem=w=>{if(w.length<=3)return w;
+  if(w.endsWith('ies')&&w.length>4)return w.slice(0,-3)+'y';
+  if(w.endsWith('ie')&&w.length>4)return w.slice(0,-2)+'y';
+  if(w.endsWith('oes'))return w.slice(0,-2);
+  if(/(ch|sh|x|ss)es$/.test(w))return w.slice(0,-2);
+  return w.endsWith('s')&&!w.endsWith('ss')?w.slice(0,-1):w};
+function tokens(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/['’]/g,'').replace(/[^a-z0-9%& -]/g,' ').split(/[\s,/&]+/).filter(w=>w&&!STOP.has(w)).map(stem)}
+/* other words an ad uses for the same thing: any one of them satisfies the shopper's word */
+const ALT={hamburger:['ground beef'],mince:['ground beef'],'hot dog':['frank','wiener'],hotdog:['hot dog','frank','wiener'],mayo:['mayonnaise'],ketchup:['catsup'],
+  soda:['coca-cola','pepsi','canada dry','soft drink','7up','sprite','dr pepper'],pop:['coca-cola','pepsi','soft drink'],coke:['coca-cola'],bbq:['barbecue'],
+  'dish soap':['dishwashing liquid','dish liquid','dish detergent'],'toilet paper':['bath tissue','toilet tissue'],oj:['orange juice'],'lunch meat':['lunchmeat','deli meat'],yogurt:['yoghurt'],
+  'trash bag':['garbage bag','kitchen bag'],'foil':['aluminum foil'],'tissue':['facial tissue']};
+const ALTS=Object.entries(ALT).map(([k,v])=>[tokens(k),v.map(tokens)]).sort((a,b)=>b[0].length-a[0].length);
+/* product-type rules: a deal containing one of these words is a different product, unless the shopper asked for that word */
+const EXC0={milk:'evaporated condensed chocolate almond oat coconut soy powdered malted shake',butter:'peanut almond cashew apple cocoa shea body cookie cracker bar spray popcorn',
+  cheese:'cream cottage mac macaroni cracker crisp puff danish dip sauce pizza ravioli tortellini skin snack sandwich',egg:'noodle roll nog',
+  chicken:'broth stock soup noodle bouillon sausage gravy salad entree chunk canned',turkey:'gravy broth stock sausage chili pepperoni bacon',beef:'broth stock jerky bouillon gravy',
+  potato:'chip crisp skin salad tot fry mashed tray pie casserole',roll:'cinnamon egg pizza spring cake',bread:'crumb pudding',coffee:'creamer cake filter',rice:'cake krispy pudding',
+  corn:'dog chip flake syrup starch tortilla popping',apple:'juice sauce cider pie vinegar',orange:'juice soda',tomato:'sauce soup paste ketchup',sugar:'free cookie zero',
+  cream:'cheese ice sour shave shaving hand body',ice:'cream',chip:'chocolate',juice:'bar',bacon:'bit',ham:'salad',pie:'crust filling',water:'softener'};
+/* if the deal is really one of these (its last word) and the shopper's item is only a flavour or ingredient of it, it is a different product */
+const FORM=new Set(tokens('pie cake soup sauce juice chip dressing bar candy cookie cracker seasoning broth stock dip ring pizza cereal snack gravy crust filling tea soda lemonade limeade drink roll bread muffin donut cream yogurt jam jelly preserve spread salad sandwich entree dinner meal wine beer cocktail seltzer coffee creamer butter oil vinegar syrup sausage bacon burger noodle pasta rice cheese milk water popcorn pretzel granola oatmeal pudding gelatin topping frosting glaze rub marinade casserole stuffing biscuit bun tortilla wrap crisp puff fry tot hashbrown skin powder supplement vitamin shampoo soap wash lotion detergent cleaner wipe towel tissue food treat litter mayo mayonnaise'));
+const EXC=Object.fromEntries(Object.entries(EXC0).map(([k,v])=>[k,tokens(v)]));
 function splitKw(k){const out={inc:[],exc:[]};String(k||'').split(/[\s,]+/).forEach(w=>{if(!w)return;w.startsWith('-')?out.exc.push(w.slice(1).toLowerCase()):out.inc.push(w)});return out}
+const CONT=new Set(['box','can','bottle','bot','pkg','cup','k-cup','jar','tub','ctn','carton','tray','product','variety','item']);
+const wset=a=>{const s=new Set(a);a.forEach(w=>{if(w.includes('-'))w.split('-').forEach(x=>x&&s.add(stem(x)))});return s};
+/* per-deal word sets. "head" = the product itself: the name up to the first comma or "with"; what follows is description */
+function dt(d){if(d._t)return d._t;const name=String(d.product_name||'');let head=name;const c=head.indexOf(',');if(c>0)head=head.slice(0,c);head=head.split(/\s+with\s+/i)[0];
+  const ht=tokens(head),nouns=new Set(),near=new Set();
+  head.split(/\s+or\s+|;/i).forEach(x=>{const w=tokens(x).filter(v=>!/\d/.test(v)&&!CONT.has(v));if(!w.length)return;nouns.add(w[w.length-1]);near.add(w[w.length-1]);if(w.length>1)near.add(w[w.length-2])});
+  return d._t={h:wset(ht),hs:' '+ht.join(' ')+' ',a:wset(tokens(name)),full:wset(tokens(name+' '+(d.size||''))),nouns,near}}
+const gcache=new Map();
+function groups(n){if(gcache.has(n))return gcache.get(n);let t=tokens(n);const g=[];
+  for(const [k,alts] of ALTS){for(let i=0;i+k.length<=t.length;i++){if(k.every((w,j)=>t[i+j]===w)){g.push([k,...alts]);t.splice(i,k.length);break}}}
+  t.forEach(w=>g.push([[w]]));gcache.set(n,g);return g}
+/* A deal matches only if every word of the item is a whole word in the product part of the deal name. */
 function score(item,deal){
-  const kw=splitKw(item.k),q=expand(item.n),kq=kw.inc.length?expand(kw.inc.join(' ')):[];
-  const name=tokens(deal.product_name),namestr=' '+name.join(' ')+' ';
+  const kw=splitKw(item.k),T=dt(deal);
   if(kw.exc.length){const full=(deal.product_name+' '+deal.size).toLowerCase();if(kw.exc.some(x=>full.includes(x)))return 0}
-  if(!q.length) return 0;
-  const phrase=' '+tokens(item.n).join(' ')+' ';
-  let s=0;
-  if(phrase.trim()&&namestr.includes(phrase)) s+=3;                 // exact phrase in name
-  const hit=q.filter(t=>name.some(n=>n===t||n.startsWith(t)&&t.length>=4)).length;
-  s+=hit/ q.length*2;                                              // coverage of the query
-  if(hit===0) return 0;
-  const khit=kq.filter(t=>name.some(n=>n===t||n.startsWith(t))).length;
-  s+=khit*0.8;                                                     // keywords sharpen
-  const extra=tokens(deal.restrictions).filter(t=>q.includes(t)).length;
-  s+=Math.min(extra,2)*0.2;
+  const g=groups(item.n);if(!g.length)return 0;
+  if(!g.every(alts=>alts.some(a=>a.every(w=>T.h.has(w)))))return 0;
+  const q=tokens(item.n),own=new Set([...q,...tokens(kw.inc.join(' '))]);
+  for(const w of q){const ex=EXC[w];if(ex&&ex.some(x=>T.a.has(x)&&!own.has(x)))return 0}
+  const lastG=g.find(alts=>alts[0].includes(q[q.length-1]))||g[g.length-1];
+  if(!lastG.some(a=>T.near.has(a[a.length-1])))return 0;                  // the item must sit at the end of the product name, where the product itself is named
+  const isHead=lastG.some(a=>T.nouns.has(a[a.length-1]));                 // the item is what the product is
+  if(!isHead&&[...T.nouns].some(x=>FORM.has(x)&&!own.has(x)))return 0;    // ...or only a flavour/ingredient of something else
+  let s=2;
+  if(T.hs.includes(' '+q.join(' ')+' '))s+=1;          // exact phrase
+  if(isHead)s+=1.5;
+  s+=kwHits(item,deal)*0.8;
   return s;
 }
 /* keywords are the shopper's explicit intent: a deal that matches more of them always outranks one that matches fewer */
 function kwHits(item,deal){const kw=splitKw(item.k);if(!kw.inc.length)return 0;
-  const kq=[...new Set(expand(kw.inc.join(' ')))],name=tokens(deal.product_name+' '+(deal.size||''));
-  return kq.filter(t=>name.some(n=>n===t||n.startsWith(t))).length}
+  const kq=[...new Set(tokens(kw.inc.join(' ')))],full=dt(deal).full;
+  return kq.filter(t=>full.has(t)).length}
 function candidates(item){
   return deals.map(d=>({d,s:score(item,d),k:kwHits(item,d)})).filter(x=>x.s>=1.2).sort((a,b)=>b.k-a.k||b.s-a.s);
 }
@@ -338,8 +382,22 @@ function tripMath(items){const cnt={};items.forEach(({d})=>{if(thr(d))cnt[d.deal
   const met=d=>{const T=thr(d);return !T||(cnt[d.deal_type]||0)>=T.n};
   const price=d=>{if(d.computed_unit_price==null)return null;if(met(d))return d.computed_unit_price;const u=thr(d).under;return u==null?d.computed_unit_price:u};
   return{cnt,met,price}}
-function tripTotals(items,M){let firm=0,est=0,np=0;items.forEach(({d})=>{const p=M.price(d);if(p==null){np++;return}d.price_basis==='save_up_to_ceiling'?est+=p:firm+=p});return{firm,est,np}}
-const totLine=t=>`firm <b>${money(t.firm)}</b>${t.est?` + est. \u2264 ${money(t.est)}`:''}${t.np?` + ${t.np} not priced`:''}`;
+/* buy-N-get-M-free deals (BOGO = 1+1): the honest trip cost is the whole set, because one item alone may ring at full price */
+function getFree(d){const t=(d&&d.deal_type)||'';if(t==='bogo')return{n:1,m:1};const m=t.match(/^buy(\d+)_get(\d+)$/);return m?{n:+m[1],m:+m[2]}:null}
+const r2=v=>Math.round(v*100+1e-6)/100;
+/* what one shopping-list line adds to the trip: kind = firm | est | lb (sold by the pound, weight unknown) | none */
+function lineCost(d,M){
+  const p=M.price(d);if(p==null)return{kind:'none',amt:0,txt:'—',note:''};
+  if((d.unit||'ea')==='lb')return{kind:'lb',amt:0,txt:money(p)+'/lb',note:'by weight'};
+  const ceil=d.price_basis==='save_up_to_ceiling',under=!!thr(d)&&!M.met(d)&&p!==d.computed_unit_price,g=getFree(d);
+  if(g){const q=g.n+g.m,amt=d.regular_price!=null&&Math.abs(d.regular_price*g.n-p*q)<=0.02*q?r2(d.regular_price*g.n):r2(p*q);
+    return{kind:ceil?'est':'firm',amt,txt:(ceil?'≤ ':'')+money(amt),note:'for '+q}}
+  const est=ceil||under;return{kind:est?'est':'firm',amt:p,txt:(est?'≤ ':'')+money(p),note:under?'until '+thr(d).n+' items':''}}
+function tripTotals(items,M){let firm=0,est=0,np=0,lb=0;items.forEach(({d})=>{const L=lineCost(d,M);if(L.kind==='none')np++;else if(L.kind==='lb')lb++;else if(L.kind==='est')est+=L.amt;else firm+=L.amt});return{firm,est,np,lb}}
+const totLine=t=>{const a=[];if(t.firm||!(t.est||t.lb||t.np))a.push(`firm <b>${money(t.firm)}</b>`);if(t.est)a.push(`est. \u2264 <b>${money(t.est)}</b>`);if(t.lb)a.push(`${t.lb} by the pound`);if(t.np)a.push(`${t.np} not priced`);return a.join(' + ')};
+/* ---------- savings: only where the ad prints a regular (or before-coupon) price to measure against ---------- */
+function sv(d){const r=d&&d.regular_price,c=d&&d.computed_unit_price;if(r==null||c==null||!(r>c))return null;return{pct:Math.round((1-c/r)*100),amt:Math.round((r-c)*100)/100}}
+const svBadge=d=>{const s=sv(d);return s&&s.pct>=1?`<span class="sv">Save ${s.pct}%</span>`:''};
 /* ---------- formatting ---------- */
 const money=v=>v==null?'—':'$'+Number(v).toFixed(2);
 function tagPrice(d){
@@ -362,53 +420,78 @@ function why(d){
 const allStores=()=>[...new Set(deals.map(d=>d.chain))].sort();
 let myStores=store.get('dm.stores',null); // null = all
 const stores=()=>{const a=allStores(),f=a.filter(s=>!myStores||myStores.includes(s));return f.length?f:a};
+/* main store: where you shop by default. Shown first everywhere; plain items go here unless you tap Buy here on another store */
+const home=()=>{const st=stores(),h=store.get('dm.home',null);return st.includes(h)?h:(st.includes('Kroger')?'Kroger':st[0])};
+const homeFirst=a=>{const h=home();return [...a].sort((x,y)=>(y===h)-(x===h))};
 
 /* ---------- render: list ---------- */
 function renderList(){
-  const el=$('#listOut');
-  if(!list.length){el.innerHTML='<div class="empty">Your list is empty. Add the things you buy most weeks; they stay here.</div>';return}
+  const el=$('#listOut'),watch=list.filter(i=>!i.adhoc);
+  if(!watch.length){el.innerHTML='<div class="empty">Your list is empty. Add the things you buy most weeks; they stay here.</div>';return}
   const st=stores();let matched=0;
-  el.innerHTML=list.map(item=>{
+  el.innerHTML=watch.map(item=>{
     const bs=byStore(item);
     const cells=st.map(ch=>{const c=bs[ch]||[];return {ch,c,d:chosen(item,ch,c)}});
-    const priced=cells.filter(x=>x.d&&x.d.computed_unit_price!=null);
-    const sameUnit=new Set(priced.map(x=>x.d.unit||'ea')).size===1;
-    const best=priced.length&&sameUnit?priced.reduce((a,b)=>b.d.computed_unit_price<a.d.computed_unit_price?b:a):null;
+    const hm=home(),dflt=(cells.find(x=>x.d&&x.ch===hm)||cells.find(x=>x.d)||{}).ch;
     if(cells.some(x=>x.d)) matched++;
-    // show the BEST store first, then priced stores cheapest-first, then unpriced, then "not in ad"
-    const ordered=[...cells].sort((a,b)=>{const ab=best&&a.ch===best.ch,bb=best&&b.ch===best.ch;if(ab!==bb)return ab?-1:1;
-      const ap=a.d?.computed_unit_price??Infinity,bp=b.d?.computed_unit_price??Infinity;if(a.d&&!b.d)return -1;if(!a.d&&b.d)return 1;return ap-bp});
+    // main store first, then the others: side by side for reference, not a like-for-like ranking
+    const ordered=[...cells].sort((a,b)=>(b.ch===hm)-(a.ch===hm)||(!!b.d)-(!!a.d));
     const tags=ordered.map(x=>{
       const d=x.d,cl=!d?'none':d.price_basis==='save_up_to_ceiling'?'ceil':'';
-      const here=item.buy&&(prefs[item.id]===x.ch||(!prefs[item.id]&&best&&x.ch===best.ch)||(!prefs[item.id]&&!best&&x===cells.find(c=>c.d)));
+      const here=item.buy&&(prefs[item.id]?prefs[item.id]===x.ch:x.ch===dflt);
       const buyBtn=d?`<button class="buyhere ${here?'on':''}" data-buy="${item.id}|${esc(x.ch)}">${here?'✓ Buying here':'Buy here'}</button>`:'';
       return `<div class="tag ${cl}">
-        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?b5badge(d,true):''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}</div>
+        <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?b5badge(d,true):''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}${d?svBadge(d):''}${d&&x.ch!==hm&&cells.some(c=>c.d&&c.ch===hm)?'<span class="sim">similar item</span>':''}</div>
         ${tagPrice(d)}<div class="why">${why(d)}</div>${buyBtn}</div>`;
     }).join('');
     const pickers=cells.filter(x=>ambiguous(x.c)).map(x=>`<div class="picker"><div class="sub">More than one ${esc(x.ch)} deal fits — choose:</div>${x.c.slice(0,4).map(({d})=>`<button data-pick="${item.id}|${esc(x.ch)}|${esc(d.id)}" class="${x.d?.id===d.id?'on':''}">${esc(d.product_name)} <span class="sub">${money(d.computed_unit_price)}${d.price_basis==='save_up_to_ceiling'?' ceiling':''}</span></button>`).join('')}</div>`).join('');
-    const unitNote=priced.length>1&&!sameUnit?'<div class="sub" style="margin-top:6px">Units differ (per lb vs. each) — compare by hand.</div>':'';
+    const unitNote='';
     return `<div class="row"><div class="li"><span class="n">${esc(item.n)}${item.k?`<span class="kwpill">${esc(item.k)}</span>`:''}</span><button class="iconb" data-kw="${item.id}" title="Edit keywords">✎</button><button class="iconb" data-del="${item.id}" title="Remove">×</button></div>
       <div class="kw" id="kw-${item.id}" hidden><input data-kwin="${item.id}" value="${esc(item.k)}" placeholder="Keywords: boneless, 80% lean — use -broth to exclude"></div>
       <div class="tags ${cells.length<=2?'two':''}">${tags}</div>${unitNote}${pickers}</div>`;
   }).join('');
-  $('#nList').textContent=`${matched}/${list.length} matched`;
+  $('#nList').textContent=`${matched}/${watch.length} matched`;
 }
 
 /* ---------- render: deals ---------- */
+const openG=new Set();let dealsFiltered=false,bestOn=false;
 function renderDeals(){
   const fs=$('#fStore').value,fx=$('#fSection').value,fy=$('#fType').value,ft=$('#fText').value.toLowerCase();
-  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
-  $('#dealsOut').innerHTML=rows.length?rows.map(d=>`<div class="row deal">
-    <div>${chip(d.chain)} <span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}</div></div>
+  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.chain+'|'+d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
+  dealsFiltered=!!(fx||fy||ft);
+  if(bestOn){const st=fs||home(),all=rows.filter(d=>d.chain===st),top=all.filter(d=>sv(d)).sort((a,b)=>sv(b).pct-sv(a).pct||sv(b).amt-sv(a).amt||a._i-b._i);
+    const onB=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onB.add(ch+'|'+id))});
+    $('#dealsOut').innerHTML=`<div class="store-h" style="--c:${storeColor(st)}"><h2>${esc(st)} <span class="cnt">biggest savings first</span></h2><div class="tot">${top.length} of ${all.length}</div></div>
+      <div class="row sub">Ranked by percent off the regular or before-coupon price printed in the ad. ${all.length-top.length} more ${esc(st)} deal${all.length-top.length===1?'':'s'} print${all.length-top.length===1?'s':''} no regular price, so ${all.length-top.length===1?'it':'they'} can't be ranked; turn Best savings off to browse ${all.length-top.length===1?'it':'them'}.${allStores().length>1?' Change store under Filters.':''}</div>`+
+      (top.map(d=>{const on=onB.has(d.chain+'|'+d.id),s=sv(d);return `<div class="row deal">
+    <div><span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} <span class="sv">Save ${s.pct}% · ${money(s.amt)}</span></div></div>
+    <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}<div class="was">was ${money(d.regular_price)}</div></div>
+    <div class="r">${esc(d.restrictions)}</div>
+    <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`}).join('')||'<div class="empty">No deals with a printed regular price match.</div>');
+    $('#nDeals').textContent=`${deals.length} this week`;return}
+  const onIds=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onIds.add(ch+'|'+id))});
+  const row=d=>{const on=onIds.has(d.chain+'|'+d.id);return `<div class="row deal">
+    <div><span class="sub">p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} ${svBadge(d)}</div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'<span class="sub">no unit price</span>':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}</div>
     <div class="r">${esc(d.restrictions)}</div>
-    <button class="plus ${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'on':''}" data-plus="${esc(d.id)}">${list.some(i=>i.buy&&picks[i.id]?.[d.chain]===d.id)?'✓ On shopping list':'+ Add to list'}</button></div>`).join(''):'<div class="empty">No deals match those filters.</div>';
+    <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`};
+  const by=new Map();homeFirst(allStores()).forEach(s=>{if(rows.some(d=>d.chain===s))by.set(s,new Map())});rows.forEach(d=>{if(!by.has(d.chain))by.set(d.chain,new Map());const m=by.get(d.chain);if(!m.has(d.section))m.set(d.section,[]);m.get(d.section).push(d)});
+  const md=s=>s?s.slice(5).replace(/^0/,'').replace('-0','-').replace('-','/'):'';
+  let html='';
+  for(const [ch,secs] of by){const n=[...secs.values()].reduce((a,b)=>a+b.length,0),w=adWeeks[ch];
+    html+=`<div class="store-h" style="--c:${storeColor(ch)}"><h2>${esc(ch)} <span class="cnt">${n} deal${n===1?'':'s'}</span></h2><div class="tot">${w?md(w.valid_from)+'–'+md(w.valid_to):''}</div></div>`;
+    for(const [sec,rs] of secs){const key=ch+'|'+sec;
+      html+=`<details class="grp" data-g="${esc(key)}"${dealsFiltered||openG.has(key)?' open':''}><summary><span>${esc(sec||'Other')}</span><span class="cnt">${rs.length}</span></summary>${rs.map(row).join('')}</details>`}}
+  $('#dealsOut').innerHTML=html||'<div class="empty">No deals match those filters.</div>';
   $('#nDeals').textContent=`${deals.length} this week`;
 }
+$('#dealsOut').addEventListener('toggle',e=>{const k=e.target.dataset&&e.target.dataset.g;if(!k||dealsFiltered)return;e.target.open?openG.add(k):openG.delete(k)},true);
 function fillFilters(){
-  const keep=(sel,vals)=>{const cur=sel.value;sel.innerHTML=`<option value="">${sel.id==='fStore'?'All stores':'All sections'}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join('');sel.value=cur};
-  keep($('#fStore'),allStores());keep($('#fSection'),[...new Set(deals.map(d=>d.section))]);
+  const sSel=$('#fStore'),sCur=sSel.value;sSel.innerHTML='<option value="">All stores</option>'+allStores().map(v=>`<option>${esc(v)}</option>`).join('');sSel.value=allStores().includes(sCur)?sCur:'';
+  /* sections belong to a store: Kroger's are ad themes, Publix's are departments, so they are listed per store */
+  const xSel=$('#fSection'),xCur=xSel.value,xs=allStores().filter(s=>!sSel.value||s===sSel.value);
+  xSel.innerHTML='<option value="">All sections</option>'+xs.map(s=>{const secs=[...new Set(deals.filter(d=>d.chain===s).map(d=>d.section))];return `<optgroup label="${esc(s)}">${secs.map(v=>`<option value="${esc(s+'|'+v)}">${esc(v)}</option>`).join('')}</optgroup>`}).join('');
+  xSel.value=xCur;if(xSel.value!==xCur)xSel.value='';
   const tl={digital_coupon:'Digital coupon',bogo:'BOGO (Buy 1, Get 1 Free)',multi_buy:'Multi-buy (2/$5 etc.)',sale:'Sale price',bogo_50_off:'Buy 1, Get 1 50% off',percent_off:'Percent off'};
   const tlabel=t=>{if(tl[t])return tl[t];let m;if(m=t.match(/^buy(\d+)_get(\d+)$/))return`Buy ${m[1]}, Get ${m[2]} Free`;if(m=t.match(/^buy(\d+)_save(\d+)$/))return`Buy ${m[1]}, Save $${m[2]} each`;if(m=t.match(/^buy(\d+)_pay(\d+)c$/))return`Buy ${m[1]}, Pay ${m[2]}\u00a2 each`;if(m=t.match(/^spend(\d+)_save(\d+)$/))return`Spend $${m[1]}, Save $${m[2]}`;return t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())};
   const tsel=$('#fType'),tcur=tsel.value,tcounts={};deals.forEach(d=>{if(d.deal_type)tcounts[d.deal_type]=(tcounts[d.deal_type]||0)+1});
@@ -419,15 +502,13 @@ function fillFilters(){
 
 /* ---------- render: shop ---------- */
 function planByStore(){
-  const st=stores(),plan={};st.forEach(s=>plan[s]=[]);
+  const st=homeFirst(stores()),plan={};st.forEach(s=>plan[s]=[]);
   for(const item of list.filter(i=>i.buy)){
     const bs=byStore(item);
     const cells=st.map(ch=>({ch,d:chosen(item,ch,bs[ch]||[])})).filter(x=>x.d);
     if(!cells.length) continue;
-    const priced=cells.filter(x=>x.d.computed_unit_price!=null);
-    const su=new Set(priced.map(x=>x.d.unit||'ea')).size===1;
     const forced=prefs[item.id]&&cells.find(x=>x.ch===prefs[item.id]);
-    const win=forced||(priced.length&&su?priced.reduce((a,b)=>b.d.computed_unit_price<a.d.computed_unit_price?b:a):cells[0]);
+    const win=forced||cells.find(x=>x.ch===home())||cells[0];
     plan[win.ch].push({item,d:win.d});
   }
   return plan;
@@ -442,8 +523,8 @@ function renderShop(){
       const T=thr(deals.find(d=>d.chain===ch&&d.deal_type===ty)),b=M.cnt[ty]||0,elig=deals.filter(d=>d.chain===ch&&d.deal_type===ty).length,hit=b>=T.n;
       html+=`<div class="meter ${hit?'hit':''}">${esc(T.label)}: ${Math.min(b,T.n)} of ${T.n} ${hit?'\u2014 discount applies':`\u2014 ${T.n-b} more participating item${T.n-b>1?'s':''} to unlock${b?'; until then these ring up at full price':''}`}<div class="bar">${Array.from({length:T.n},(_,i)=>`<i class="${i<b?'on':''}"></i>`).join('')}</div><button class="btn q s" style="margin-top:8px" data-showb5="${esc(ch)}" data-b5type="${esc(ty)}">See all ${elig} eligible ${esc(ch)} items</button></div>`}
     html+=items.map(({item,d})=>{const key=item.id+'|'+d.id,done=!!checks[key];if(!done)n++;
-      const p=M.price(d),T=thr(d),short=T&&!M.met(d)&&p!==d.computed_unit_price;
-      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' \u00b7 '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}${limited(d)?' <span class="flag">'+esc(d.section)+'</span>':''}<br>${esc(d.restrictions)}${short?`<br><b>${money(d.computed_unit_price)} each once you have ${T.n} participating items</b>`:''}</div></div><div class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${p==null?'\u2014':(d.price_basis==='save_up_to_ceiling'?'\u2264 ':'')+money(p)}</div></label>`}).join('');
+      const p=M.price(d),T=thr(d),short=T&&!M.met(d)&&p!==d.computed_unit_price,L=lineCost(d,M),g=getFree(d);
+      return `<label class="ck ${done?'done':''}"><input type="checkbox" data-ck="${esc(key)}" ${done?'checked':''}><div><div class="t">${esc(item.n)}</div><div class="d">${esc(d.product_name)}${d.size?' \u00b7 '+esc(d.size):''}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)}${limited(d)?' <span class="flag">'+esc(d.section)+'</span>':''}<br>${esc(d.restrictions)}${short?`<br><b>${money(d.computed_unit_price)} each once you have ${T.n} participating items</b>`:''}${L.kind==='lb'?'<br><b>Sold by the pound: cost depends on the weight you pick, so it is left out of the total.</b>':''}${g&&L.kind!=='none'?`<br><b>Price shown is for all ${g.n+g.m} (${money(p)} each). Buying fewer may ring up at full price.</b>`:''}</div></div><div class="pr ${L.kind==='est'?'ceil':''}">${L.txt}${L.note?`<small>${esc(L.note)}</small>`:''}</div><button type="button" class="iconb" data-rm="${item.id}" title="Take off the shopping list">×</button></label>`}).join('');
   }
   const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length) html+=`<div class="store-h plain"><h2>Not on sale this week</h2></div><div class="row sub">${unmatched.map(i=>esc(i.n)).join(', ')} — buy wherever you're already going.</div>`;
@@ -456,7 +537,7 @@ function renderShop(){
 function renderData(){
   const w=Object.entries(adWeeks);
   $('#adInfo').innerHTML=w.length?w.map(([ch,v])=>`<b>${esc(ch)}</b>: ${v?`${esc(v.valid_from)} to ${esc(v.valid_to)}${v.extended_page_valid_to?' (some items to '+esc(v.extended_page_valid_to)+')':''}${v.store?'<br><span class=sub>'+esc(v.store)+'</span>':''}`:'no ad loaded'}`).join('<br>'):`${deals.length} rows loaded, no ad dates supplied.`;
-  $('#listInfo').textContent=`${list.length} items on the list.`;
+  {const w=list.filter(i=>!i.adhoc).length,o=list.length-w;$('#listInfo').textContent=`${w} item${w===1?'':'s'} on Compare Deals${o?`, plus ${o} one-off deal${o===1?'':'s'} on this week's Shopping List`:''}.`}
   const src=store.get('dm.dealsSource','built-in seed');
   const now=new Date(),stale=w.filter(([,v])=>v&&new Date(v.valid_to+'T23:59:59')<now).map(([ch,v])=>`${ch} ad expired ${v.valid_to}`);
   const roll=store.get('dm.rollover',false)&&list.some(i=>i.buy)?`<div class="banner">New ads were loaded and your Shopping List still has last trip's items, now matched against the new prices. <button class="btn q s" data-roll="clear">Start a fresh list</button> <button class="btn q s" data-roll="keep">Keep it</button></div>`:'';
@@ -465,8 +546,9 @@ function renderData(){
   const to=live.map(([,v])=>v.valid_to).sort().pop();$('#wk').textContent=live.length?`Ads through ${md(to)} · ${live.length} store${live.length>1?'s':''}`:'';
   $('#wkDetail').textContent=live.map(([ch,v])=>`${ch} ${md(v.valid_from)}–${md(v.valid_to)}`).join(' · ');
 }
-function renderStores(){$('#storeToggles').innerHTML=allStores().map(s=>`<label class="btn q" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-store="${esc(s)}" ${stores().includes(s)?'checked':''}>${chip(s)}</label>`).join('')}
-$('#storeToggles').addEventListener('change',e=>{const s=e.target.dataset.store;if(!s) return;const on=allStores().filter(x=>x===s?e.target.checked:stores().includes(x));if(!on.length){e.target.checked=true;return}myStores=on.length===allStores().length?null:on;store.set('dm.stores',myStores);renderList();renderShop();renderData()});
+function renderStores(){$('#homeSel').innerHTML=stores().map(s=>`<option${s===home()?' selected':''}>${esc(s)}</option>`).join('');$('#storeToggles').innerHTML=allStores().map(s=>`<label class="btn q" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-store="${esc(s)}" ${stores().includes(s)?'checked':''}>${chip(s)}</label>`).join('')}
+$('#storeToggles').addEventListener('change',e=>{const s=e.target.dataset.store;if(!s) return;const on=allStores().filter(x=>x===s?e.target.checked:stores().includes(x));if(!on.length){e.target.checked=true;return}myStores=on.length===allStores().length?null:on;store.set('dm.stores',myStores);renderAll()});
+$('#homeSel').addEventListener('change',e=>{store.set('dm.home',e.target.value);renderAll()});
 function renderAll(){fillFilters();renderStores();renderList();renderDeals();renderShop();renderData();renderMine()}
 
 /* ---------- events ---------- */
@@ -476,17 +558,21 @@ document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.addEventListener('cli
   ['list','deals','shop','data'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.t);window.scrollTo(0,0);
 }));
 function addItems(names){let added=0;for(let n of names){n=n.trim().replace(/^[-•*]\s*/,'');if(!n||/^[A-Z &]+:?$/.test(n)&&n.length<24) continue; // skips ATK category headers like "PRODUCE"
-  const dup=list.find(i=>i.n.toLowerCase()===n.toLowerCase());if(dup){dup.buy=true;added++;continue} // already tracked: just put it on this week's shopping list
+  const dup=list.find(i=>i.n.toLowerCase()===n.toLowerCase());if(dup){dup.buy=true;delete dup.adhoc;added++;continue} // already tracked: just put it on this week's shopping list
   list.push({n,k:'',buy:true,id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)});added++}
   saveList();renderList();renderShop();renderData();return added}
-function addPinned(name,deal){let n=(name||'').trim()||deal.product_name;const same=x=>list.find(i=>i.n.toLowerCase()===x.toLowerCase());let it=same(n);
+/* one-off items (added with + Add to list) live on the Shopping List only; they are deleted when taken off it */
+function prune(){const gone=list.filter(i=>i.adhoc&&!i.buy);if(!gone.length)return;gone.forEach(i=>{delete picks[i.id];delete prefs[i.id];Object.keys(checks).forEach(k=>{if(k.startsWith(i.id+'|'))delete checks[k]})});list=list.filter(i=>!(i.adhoc&&!i.buy))}
+function addPinned(name,deal,adhoc){let n=(name||'').trim()||deal.product_name;const same=x=>list.find(i=>i.n.toLowerCase()===x.toLowerCase());let it=same(n);
   if(it&&it.buy){const cur=picks[it.id]?.[deal.chain];if(cur&&cur!==deal.id&&deals.some(d=>d.id===cur)){n=n+' ('+(deal.size||'other size')+')';it=same(n)}} // same name, different deal: keep both
-  if(!it){it={n,k:'',id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)};list.push(it)}
+  if(!it){it={n,k:'',id:crypto.randomUUID?.()||Math.random().toString(36).slice(2)};if(adhoc)it.adhoc=true;list.push(it)}
+  else if(!adhoc)delete it.adhoc;
   it.buy=true;(picks[it.id]??={})[deal.chain]=deal.id;prefs[it.id]=deal.chain;saveList();renderList();renderShop();renderData();renderDeals();return it}
 function taRender(){const q=$('#newItem').value.trim(),box=$('#ta');if(q.length<2||!deals.length){box.hidden=true;return}
   const words=q.toLowerCase().split(/\s+/),last=words[words.length-1],base=words.slice(0,-1).join(' ');
-  const pre=d=>tokens(d.product_name).some(w=>w.startsWith(last))||(deal=>false)(d);
-  const hits=deals.map(d=>({d,s:base?score({n:base,k:''},d):(pre(d)?2:0)})).filter(x=>x.s>=1.2&&pre(x.d)).sort((a,b)=>b.s-a.s||(a.d.computed_unit_price??99)-(b.d.computed_unit_price??99)).slice(0,8);
+  const lastS=stem(last),pre=d=>tokens(d.product_name).some(w=>w.startsWith(last)||w.startsWith(lastS));
+  const bt=tokens(base);/* suggestions are deliberately looser than matching: the shopper is choosing by eye */
+  const hits=deals.map(d=>({d,s:pre(d)&&bt.every(w=>dt(d).a.has(w))?2+score({n:q,k:''},d):0})).filter(x=>x.s>=1.2).sort((a,b)=>b.s-a.s||(a.d.computed_unit_price??99)-(b.d.computed_unit_price??99)).slice(0,8);
   if(!hits.length){box.innerHTML=`<div class="hint">No deal matches "${esc(q)}" this week — press Add to keep it on your list anyway.</div>`;box.hidden=false;return}
   box.innerHTML=hits.map(({d})=>`<button data-ta="${esc(d.id)}">${chip(d.chain)}<span class="nm">${esc(d.product_name)}<br><span class="sub">${esc(d.size||'')}</span></span><span class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'—':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'/'+esc(d.unit)}</span></button>`).join('')+`<div class="hint">Tap a deal to add it with that match pinned, or press Add for plain "${esc(q)}".</div>`;box.hidden=false}
 $('#newItem').addEventListener('input',taRender);
@@ -497,8 +583,8 @@ $('#addBtn').addEventListener('click',()=>{addItems([$('#newItem').value]);$('#n
 $('#newItem').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#addBtn').click()}if(e.key==='Escape')$('#ta').hidden=true});
 $('#dealsOut').addEventListener('click',e=>{const b=e.target.closest('[data-plus]');if(!b)return;const d=deals.find(x=>x.id===b.dataset.plus);if(!d)return;
   const on=list.filter(i=>i.buy&&picks[i.id]?.[d.chain]===d.id);
-  if(on.length){on.forEach(i=>{i.buy=false});saveList();renderList();renderShop();renderData();renderDeals()}
-  else addPinned(d.product_name,d)});
+  if(on.length){on.forEach(i=>{i.buy=false;delete prefs[i.id]});prune();saveList();renderList();renderShop();renderData();renderDeals()}
+  else addPinned(d.product_name,d,true)});
 $('#listOut').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t) return;
   if(t.dataset.del){list=list.filter(i=>i.id!==t.dataset.del);delete picks[t.dataset.del];saveList();renderList();renderShop();renderData()}
@@ -510,13 +596,15 @@ $('#listOut').addEventListener('click',e=>{
     saveList();renderList();renderShop();renderDeals()}
 });
 $('#listOut').addEventListener('change',e=>{const id=e.target.dataset.kwin;if(!id) return;const it=list.find(i=>i.id===id);it.k=e.target.value;saveList();renderList();renderShop()});
-['fStore','fSection','fType','fText'].forEach(id=>$('#'+id).addEventListener('input',()=>{renderDeals();$('#fToggle').classList.toggle('on',!!($('#fStore').value||$('#fSection').value||$('#fType').value))}));
+['fStore','fSection','fType','fText'].forEach(id=>$('#'+id).addEventListener('input',()=>{if(id==='fStore')fillFilters();renderDeals();$('#fToggle').classList.toggle('on',!!($('#fStore').value||$('#fSection').value||$('#fType').value))}));
 $('#fToggle').addEventListener('click',()=>{$('#fMore').hidden=!$('#fMore').hidden});
-$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-showb5]');if(!b)return;$('#fStore').value=b.dataset.showb5;$('#fSection').value='';$('#fType').value=b.dataset.b5type||'';$('#fText').value='';$('#fMore').hidden=false;$('#fToggle').classList.add('on');renderDeals();document.querySelector('.tabs [data-t=deals]').click()});
+$('#fBest').addEventListener('click',()=>{bestOn=!bestOn;$('#fBest').classList.toggle('on',bestOn);$('#fBest').setAttribute('aria-pressed',bestOn);renderDeals();window.scrollTo(0,0)});
+$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-showb5]');if(!b)return;bestOn=false;$('#fBest').classList.remove('on');$('#fStore').value=b.dataset.showb5;$('#fSection').value='';fillFilters();$('#fType').value=b.dataset.b5type||'';$('#fText').value='';$('#fMore').hidden=false;$('#fToggle').classList.add('on');renderDeals();document.querySelector('.tabs [data-t=deals]').click()});
+$('#shopOut').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;e.preventDefault();const it=list.find(i=>i.id===b.dataset.rm);if(!it)return;it.buy=false;delete prefs[it.id];prune();saveList();renderList();renderShop();renderData();renderDeals()});
 $('#shopOut').addEventListener('change',e=>{const k=e.target.dataset.ck;if(!k) return;checks[k]=e.target.checked;if(!checks[k])delete checks[k];saveList();renderShop()});
-$('#clearBuy').addEventListener('click',()=>{list.forEach(i=>i.buy=false);checks={};saveList();renderAll()});
+$('#clearBuy').addEventListener('click',()=>{list.forEach(i=>i.buy=false);checks={};prune();saveList();renderAll()});
 $('#clearChecks').addEventListener('click',()=>{checks={};saveList();renderShop()});
-$('#pasteAdd').addEventListener('click',()=>{const n=addItems($('#pasteBox').value.split(/\n/));$('#pasteBox').value='';$('#listInfo').textContent=`Added ${n}. ${list.length} items on the list.`});
+$('#pasteAdd').addEventListener('click',()=>{const n=addItems($('#pasteBox').value.split(/\n/));$('#pasteBox').value='';$('#listInfo').textContent=`Added ${n}. ${list.filter(i=>!i.adhoc).length} items on Compare Deals.`});
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function toCsv(){const q=v=>{if(v==null)return'';const s=String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   return [SCHEMA.join(','),...deals.map(d=>SCHEMA.map(k=>q(d[k])).join(','))].join('\r\n')}
@@ -529,7 +617,7 @@ $('#adClear').addEventListener('click',()=>{if(!mine.length)return;if(!confirm(`
 $('#dlCsv').addEventListener('click',()=>dl('deals.csv','\ufeff'+toCsv(),'text/csv;charset=utf-8'));
 $('#dlJson').addEventListener('click',()=>dl('deals.json',JSON.stringify({schema:SCHEMA,ad_weeks:adWeeks,rows:deals.map(d=>SCHEMA.map(k=>d[k]??null))},null,1),'application/json'));
 $('#exportList').addEventListener('click',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(list,null,2)],{type:'application/json'}));a.download='list.json';a.click()});
-$('#listFile').addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j))throw new Error('list.json must be an array');list=j.map(x=>({n:x.n||x.name||String(x),k:x.k||'',buy:!!x.buy,id:x.id||Math.random().toString(36).slice(2)}));saveList();renderAll()}catch(err){alert('Could not load list: '+err.message)}e.target.value=''});
+$('#listFile').addEventListener('change',async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!Array.isArray(j))throw new Error('list.json must be an array');list=j.map(x=>({n:x.n||x.name||String(x),k:x.k||'',buy:!!x.buy,id:x.id||Math.random().toString(36).slice(2),...(x.adhoc?{adhoc:true}:{})}));saveList();renderAll()}catch(err){alert('Could not load list: '+err.message)}e.target.value=''});
 function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.replace(/^\ufeff/,'');
   for(let i=0;i<text.length;i++){const c=text[i];
     if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
@@ -542,7 +630,7 @@ function parseCsv(text){const rows=[];let row=[],cell='',q=false;text=text.repla
   return rows.filter(r=>r.length>1).map(r=>{const o=Object.fromEntries(SCHEMA.map((k,j)=>[k,r[j]??'']));['regular_price','sale_price','coupon_discount','page','computed_unit_price'].forEach(k=>o[k]=num(o[k]));o.digital_coupon_required=bool(o.digital_coupon_required);['price_basis','deal_group_id'].forEach(k=>{if(o[k]==='')o[k]=null});return o})}
 $('#dealsFile').addEventListener('change',async e=>{const f=e.target.files[0];try{const txt=await f.text();const body=txt.replace(/^\ufeff/,'').trimStart();setDeals(/^[\[{]/.test(body)?JSON.parse(txt):parseCsv(txt),f.name)}catch(err){$('#banner').innerHTML=`<div class="banner bad">${esc(f.name)} was not loaded: ${esc(err.message)}. The previous deals are still in use.</div>`}e.target.value=''});
 $('#fetchDeals').addEventListener('click',fetchSite);
-$('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-roll]');if(!b)return;store.set('dm.rollover',false);if(b.dataset.roll==='clear'){list.forEach(i=>i.buy=false);checks={};prefs={};saveList()}renderAll()});
+$('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-roll]');if(!b)return;store.set('dm.rollover',false);if(b.dataset.roll==='clear'){list.forEach(i=>i.buy=false);checks={};prefs={};prune();saveList()}renderAll()});
 async function fetchSite(){try{const r=await fetch('deals.json',{cache:'no-store'});if(!r.ok)throw new Error(r.status);setDeals(await r.json(),'deals.json on site');return true}catch{return false}}
 
 /* ---------- intros: open for the first 3 visits on this device, then collapsed ---------- */
@@ -552,17 +640,17 @@ const pmd=s=>s?esc(String(s).slice(5).replace(/^0/,'').replace('-0','-').replace
 function buildPrint(){
   let box=document.getElementById('printOut');
   if(!box){box=document.createElement('div');box.id='printOut';document.body.appendChild(box)}
-  const plan=planByStore();let gFirm=0,gEst=0,gNp=0,count=0,body='';
+  const plan=planByStore();let gFirm=0,gEst=0,gNp=0,gLb=0,count=0,body='';
   for(const ch of Object.keys(plan)){
     const items=plan[ch].filter(({item,d})=>!checks[item.id+'|'+d.id]);if(!items.length) continue;
     const M=tripMath(plan[ch]),T0=tripTotals(items,M);
-    gFirm+=T0.firm;gEst+=T0.est;gNp+=T0.np;count+=items.length;
+    gFirm+=T0.firm;gEst+=T0.est;gNp+=T0.np;gLb+=T0.lb;count+=items.length;
     let b5='';for(const ty of Object.keys(M.cnt)){const T=thr(plan[ch].find(({d})=>d.deal_type===ty).d),c=M.cnt[ty];
       b5+=`<div class="pb5">${esc(T.label)}: ${Math.min(c,T.n)} of ${T.n}${c>=T.n?' \u2014 discount applies':` \u2014 ${T.n-c} short, so these are listed at full price`}</div>`}
     body+=`<div class="pstore${items.length<=10?' keep':''}"><h2><span>${esc(ch)} <small>(${items.length})</small></span><small>${totLine(T0).replace(/<\/?b>/g,'')}</small></h2>${b5}<table>${items.map(({item,d})=>{
-      const ceil=d.price_basis==='save_up_to_ceiling',p=M.price(d);
+      const L=lineCost(d,M);
       const notes=[d.size,d.digital_coupon_required?'digital coupon':'',thr(d)?thr(d).label:'',limited(d)?d.section:'',d.restrictions].filter(Boolean).map(esc).join(' \u00b7 ');
-      return `<tr><td class="bx"><span></span></td><td><b>${esc(item.n)}</b><div class="dd">${String(d.product_name).trim().toLowerCase()===String(item.n).trim().toLowerCase()?notes:esc(d.product_name)+(notes?' \u2014 '+notes:'')}</div></td><td class="pr">${p==null?'\u2014':(ceil?'\u2264 ':'')+money(p)}</td></tr>`}).join('')}</table></div>`;
+      return `<tr><td class="bx"><span></span></td><td><b>${esc(item.n)}</b><div class="dd">${String(d.product_name).trim().toLowerCase()===String(item.n).trim().toLowerCase()?notes:esc(d.product_name)+(notes?' \u2014 '+notes:'')}</div></td><td class="pr">${L.txt}${L.note?' <small>'+esc(L.note)+'</small>':''}</td></tr>`}).join('')}</table></div>`;
   }
   const unmatched=list.filter(i=>i.buy&&!stores().some(ch=>chosen(i,ch,byStore(i)[ch]||[])));
   if(unmatched.length){count+=unmatched.length;body+=`<div class="pstore"><h2><span>Not on sale this week <small>(${unmatched.length})</small></span></h2><table>${unmatched.map(i=>`<tr><td class="bx"><span></span></td><td><b>${esc(i.n)}</b></td><td class="pr"></td></tr>`).join('')}</table></div>`}
@@ -570,7 +658,7 @@ function buildPrint(){
   const today=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   box.innerHTML=`<table class="pwrap"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td class="pbody"><h1>Shopping List</h1><div class="pmeta">Printed ${esc(today)}${live.length?' · Ads: '+live.map(([ch,v])=>`${esc(ch)} ${pmd(v.valid_from)}–${pmd(v.valid_to)}`).join(' · '):''}</div>`+
     (body||'<p>Nothing left to buy — every item is checked off.</p>')+
-    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}${gNp?` + ${gNp} not priced`:''}</div><div class="pnote">≤ = "save up to" ceiling price; actual may be lower. Items already checked off in the app are not printed.</div>`:'')+`</td></tr></tbody></table>`;
+    (body?`<div class="pgrand">${count} item${count===1?'':'s'} · firm ${money(gFirm)}${gEst?` + est. ≤ ${money(gEst)}`:''}${gLb?` + ${gLb} by the pound`:''}${gNp?` + ${gNp} not priced`:''}</div><div class="pnote">≤ = the most you would pay; actual may be lower. Items sold by the pound are not in the totals. Buy-and-get-free deals are priced for the whole set. Items already checked off in the app are not printed.</div>`:'')+`</td></tr></tbody></table>`;
 }
 window.addEventListener('beforeprint',buildPrint); // covers Ctrl+P / browser menu too
 document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){buildPrint();window.print()}});
@@ -579,7 +667,11 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-print]')){build
   const saved=store.get('dm.deals',null);
   try{ if(saved) setDeals(saved,store.get('dm.dealsSource','saved')); else setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
   catch(err){ setDeals(JSON.parse($('#seed').textContent),'built-in seed'); }
-  if(location.protocol.startsWith('http')) fetchSite(); // if a deals.json sits next to the page, prefer it
+  if(location.protocol.startsWith('http')) await fetchSite(); // if a deals.json sits next to the page, prefer it
+  /* one-time clean-up: earlier versions left every "+ Add to list" deal on Compare Deals */
+  if(!store.get('dm.mig2',false)){store.set('dm.mig2',true);
+    list.forEach(i=>{if(i.adhoc||i.k)return;const ids=Object.values(picks[i.id]||{});const d=deals.find(x=>ids.includes(x.id)&&(i.n===x.product_name||i.n.startsWith(x.product_name+' (')));if(d)i.adhoc=true});
+    prune();saveList();renderAll()}
   if('serviceWorker' in navigator&&location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{}); // lets the app open with no signal
 })();
 })();
