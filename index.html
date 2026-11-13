@@ -102,8 +102,11 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
 .deal .p .was{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:line-through;text-align:right}
 #fBest.on{background:var(--ink);color:#fff}
 #fText{min-width:80px}
-.lk{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px}
-.lk a{font-size:15px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:4px 0}
+.lk{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+.lk a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ink);border-radius:99px;padding:7px 13px;font-size:15px;font-weight:600;color:var(--ink);background:var(--card);text-decoration:none;white-space:nowrap}
+.lk a:hover{background:var(--ink);color:#fff}
+.lk.storelk{margin:-2px 0 10px}
+.lk.sm{gap:5px;margin:6px 0}.lk.sm a{padding:3px 9px;font-size:12px;border-color:rgba(0,0,0,.45);background:rgba(255,255,255,.6)}
 .tag .store{flex-wrap:wrap;row-gap:4px;overflow:visible}
 .tag .store .sv,.tag .store .sim{margin-left:0}
 /* shop tab */
@@ -415,14 +418,19 @@ const adSlug=ch=>String(ch).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-
 const adFile=ch=>(adWeeks[ch]&&adWeeks[ch].ad_pdf)||adFiles[ch]||null;
 async function probeAds(){if(!location.protocol.startsWith('http'))return;let found=false;
   await Promise.all(allStores().map(async ch=>{if(adFiles[ch])return;try{const r=await fetch(adSlug(ch),{method:'HEAD',cache:'no-store'});if(r.ok&&/pdf/i.test(r.headers.get('content-type')||'pdf')){adFiles[ch]=adSlug(ch);found=true}}catch{}}));
-  if(found){renderDeals();renderShop();renderData()}}
+  if(found){renderList();renderDeals();renderShop();renderData()}}
 const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:()=>({url:'https://www.publix.com/savings/all-deals',label:'Publix deals page'})};
 function storeLink(d){const q=String(d.product_name||'').split(',')[0].replace(/\s+/g,' ').trim().slice(0,60),f=STORE_SITE[String(d.chain).toLowerCase()];
   return f?f(q):{url:'https://www.google.com/search?q='+encodeURIComponent(d.chain+' '+q),label:'Search the web'}}
-function dealLinks(d){const f=adFile(d.chain),a=[];
-  if(f&&d.page)a.push(`<a href="${esc(f)}#page=${esc(d.page)}" target="_blank" rel="noopener">See in ad \u00b7 p.${esc(d.page)}</a>`);
-  const s=storeLink(d);a.push(`<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`);
-  return `<div class="lk">${a.join('')}</div>`}
+const STORE_HOME={kroger:['https://www.kroger.com/','Kroger.com'],publix:['https://www.publix.com/savings/all-deals','Publix deals page']};
+function dealLinks(d,short){const f=adFile(d.chain),a=[];
+  if(f&&d.page)a.push(`<a href="${esc(f)}#page=${esc(d.page)}" target="_blank" rel="noopener">\ud83d\udcc4 ${short?'Ad p.'+esc(d.page):'See in ad \u00b7 p.'+esc(d.page)}</a>`);
+  const s=storeLink(d);a.push(`<a href="${esc(s.url)}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(short?s.label.replace(/^Find at /,''):s.label)}</a>`);
+  return `<div class="lk${short?' sm':''}">${a.join('')}</div>`}
+function storeLinks(ch){const f=adFile(ch),h=STORE_HOME[String(ch).toLowerCase()],a=[];
+  if(f)a.push(`<a href="${esc(f)}" target="_blank" rel="noopener">\ud83d\udcc4 Open the ${esc(ch)} ad</a>`);
+  if(h)a.push(`<a href="${esc(h[0])}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(h[1])}</a>`);
+  return a.length?`<div class="lk storelk">${a.join('')}</div>`:''}
 /* ---------- savings: only where the ad prints a regular (or before-coupon) price to measure against ---------- */
 function sv(d){const r=d&&d.regular_price,c=d&&d.computed_unit_price;if(r==null||c==null||!(r>c))return null;return{pct:Math.round((1-c/r)*100),amt:Math.round((r-c)*100)/100}}
 const svBadge=d=>{const s=sv(d);return s&&s.pct>=1?`<span class="sv">Save ${s.pct}%</span>`:''};
@@ -470,7 +478,7 @@ function renderList(){
       const buyBtn=d?`<button class="buyhere ${here?'on':''}" data-buy="${item.id}|${esc(x.ch)}">${here?'✓ Buying here':'Buy here'}</button>`:'';
       return `<div class="tag ${cl}">
         <div class="store">${chip(x.ch)}${d?.digital_coupon_required?'<span class="dc">DC</span>':''}${d?b5badge(d,true):''}${cl==='ceil'?'<span class="flag">ceiling</span>':''}${d?svBadge(d):''}${d&&x.ch!==hm&&cells.some(c=>c.d&&c.ch===hm)?'<span class="sim">similar item</span>':''}</div>
-        ${tagPrice(d)}<div class="why">${why(d)}</div>${buyBtn}</div>`;
+        ${tagPrice(d)}<div class="why">${why(d)}</div>${d?dealLinks(d,true):''}${buyBtn}</div>`;
     }).join('');
     const pickers=cells.filter(x=>ambiguous(x.c)).map(x=>`<div class="picker"><div class="sub">More than one ${esc(x.ch)} deal fits — choose:</div>${x.c.slice(0,4).map(({d})=>`<button data-pick="${item.id}|${esc(x.ch)}|${esc(d.id)}" class="${x.d?.id===d.id?'on':''}">${esc(d.product_name)} <span class="sub">${money(d.computed_unit_price)}${d.price_basis==='save_up_to_ceiling'?' ceiling':''}</span></button>`).join('')}</div>`).join('');
     const unitNote='';
@@ -489,25 +497,25 @@ function renderDeals(){
   dealsFiltered=!!(fx||fy||ft);
   if(bestOn){const st=fs||home(),all=rows.filter(d=>d.chain===st),top=all.filter(d=>sv(d)).sort((a,b)=>sv(b).pct-sv(a).pct||sv(b).amt-sv(a).amt||a._i-b._i);
     const onB=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onB.add(ch+'|'+id))});
-    $('#dealsOut').innerHTML=`<div class="store-h" style="--c:${storeColor(st)}"><h2>${esc(st)} <span class="cnt">biggest savings first</span></h2><div class="tot">${top.length} of ${all.length}</div></div>
+    $('#dealsOut').innerHTML=`<div class="store-h" style="--c:${storeColor(st)}"><h2>${esc(st)} <span class="cnt">biggest savings first</span></h2><div class="tot">${top.length} of ${all.length}</div></div>${storeLinks(st)}
       <div class="row sub">Ranked by percent off the regular or before-coupon price printed in the ad. ${all.length-top.length} more ${esc(st)} deal${all.length-top.length===1?'':'s'} print${all.length-top.length===1?'s':''} no regular price, so ${all.length-top.length===1?'it':'they'} can't be ranked; turn Best savings off to browse ${all.length-top.length===1?'it':'them'}.${allStores().length>1?' Change store under Filters.':''}</div>`+
       (top.map(d=>{const on=onB.has(d.chain+'|'+d.id),s=sv(d);return `<div class="row deal">
     <div><span class="sub">${esc(d.section)} · p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} <span class="sv">Save ${s.pct}% · ${money(s.amt)}</span></div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}<div class="was">was ${money(d.regular_price)}</div></div>
-    <div class="r">${esc(d.restrictions)}</div>${dealLinks(d)}
+    ${dealLinks(d)}<div class="r">${esc(d.restrictions)}</div>
     <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`}).join('')||'<div class="empty">No deals with a printed regular price match.</div>');
     $('#nDeals').textContent=`${deals.length} this week`;return}
   const onIds=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onIds.add(ch+'|'+id))});
   const row=d=>{const on=onIds.has(d.chain+'|'+d.id);return `<div class="row deal">
     <div><span class="sub">p.${esc(d.page)}</span><h3>${esc(d.product_name)}</h3><div class="sub">${esc(d.size||'')}${d.digital_coupon_required?' <span class="dc">DC</span>':''}${b5badge(d)} ${svBadge(d)}</div></div>
     <div class="p ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'<span class="sub">no unit price</span>':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'<span class="u">/'+esc(d.unit)+'</span>'}</div>
-    <div class="r">${esc(d.restrictions)}</div>${dealLinks(d)}
+    ${dealLinks(d)}<div class="r">${esc(d.restrictions)}</div>
     <button class="plus ${on?'on':''}" data-plus="${esc(d.id)}">${on?'✓ On shopping list':'+ Add to list'}</button></div>`};
   const by=new Map();homeFirst(allStores()).forEach(s=>{if(rows.some(d=>d.chain===s))by.set(s,new Map())});rows.forEach(d=>{if(!by.has(d.chain))by.set(d.chain,new Map());const m=by.get(d.chain);if(!m.has(d.section))m.set(d.section,[]);m.get(d.section).push(d)});
   const md=s=>s?s.slice(5).replace(/^0/,'').replace('-0','-').replace('-','/'):'';
   let html='';
   for(const [ch,secs] of by){const n=[...secs.values()].reduce((a,b)=>a+b.length,0),w=adWeeks[ch];
-    html+=`<div class="store-h" style="--c:${storeColor(ch)}"><h2>${esc(ch)} <span class="cnt">${n} deal${n===1?'':'s'}</span></h2><div class="tot">${w?md(w.valid_from)+'–'+md(w.valid_to):''}</div></div>`;
+    html+=`<div class="store-h" style="--c:${storeColor(ch)}"><h2>${esc(ch)} <span class="cnt">${n} deal${n===1?'':'s'}</span></h2><div class="tot">${w?md(w.valid_from)+'–'+md(w.valid_to):''}</div></div>${storeLinks(ch)}`;
     for(const [sec,rs] of secs){const key=ch+'|'+sec;
       html+=`<details class="grp" data-g="${esc(key)}"${dealsFiltered||openG.has(key)?' open':''}><summary><span>${esc(sec||'Other')}</span><span class="cnt">${rs.length}</span></summary>${rs.map(row).join('')}</details>`}}
   $('#dealsOut').innerHTML=html||'<div class="empty">No deals match those filters.</div>';
