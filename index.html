@@ -198,7 +198,7 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
     <p><b>The four tabs:</b> <b>Weekly Deals</b> is everything in this week's ads — tap <b>+ Add to list</b> on anything you want. <b>Compare Deals</b> is your standing watch list — items you buy regularly, with every store's deal side by side, your main store first; nothing goes to the Shopping List from here until you tap <b>Buy here</b> on a store tag. <b>Shopping List</b> is this week's trip: only the items you chose, sorted into one section per store, with checkboxes and running totals. <b>App Data</b> is this page.</p>
     <p><b>Reading a price:</b> a solid yellow tag is a price printed in the ad. An amber tag with <b>≤</b> is a ceiling worked out from "save up to" wording — the shelf price may be lower, never higher. <span class="dc">DC</span> means you must clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off with no base price, so nothing can be calculated.</p>
   </div>
-  <div class="card"><h2>This week's ads</h2><p id="adInfo"></p>
+  <div class="card"><h2>This week's ads</h2><p id="adInfo"></p><p class="sub" id="buildInfo"></p>
     <details><summary class="sub" style="cursor:pointer">Loading a different file (advanced)</summary>
       <p>The app loads <code>deals.json</code> from the website automatically. You only need these buttons if you want to try a file on this device without changing what everyone else sees.</p>
       <p><b>Load deals.json or .csv</b> replaces this week's deals on this device only. The file is checked before it's used; a bad file is rejected and nothing changes. <b>Reload from site</b> throws away anything you loaded and goes back to the shared file. If the app ever shows old prices after an update, press Reload from site first.</p>
@@ -257,6 +257,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 
 /* ---------- data ---------- */
+const BUILD='Nov 12, 2026 \u00b7 build 12';
 const SCHEMA=["chain","product_name","size","regular_price","sale_price","unit","deal_type","coupon_discount","digital_coupon_required","page","computed_unit_price","price_basis","deal_group_id","row_role","restrictions","section"];
 let adWeeks={},deals=[];
 function normalizeDeals(raw){
@@ -423,7 +424,7 @@ async function probeAds(){if(!location.protocol.startsWith('http'))return;let fo
 const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:q=>({url:'https://www.publix.com/search?searchTerm='+encodeURIComponent(q),label:'Find at Publix.com'})};
 function storeLink(d){const q=String(d.product_name||'').split(',')[0].replace(/\s+/g,' ').trim().slice(0,60),f=STORE_SITE[String(d.chain).toLowerCase()];
   return f?f(q):{url:'https://www.google.com/search?q='+encodeURIComponent(d.chain+' '+q),label:'Search the web'}}
-const STORE_HOME={kroger:['https://www.kroger.com/','Kroger.com'],publix:['https://www.publix.com/savings/all-deals','Publix deals page']};
+const STORE_HOME={kroger:['https://www.kroger.com/','Kroger.com'],publix:['https://www.publix.com/','Publix.com']};
 function dealLinks(d,short){const f=adFile(d.chain),a=[];
   if(f&&d.page)a.push(`<a href="${esc(f)}#page=${esc(d.page)}" target="_blank" rel="noopener">\ud83d\udcc4 ${short?'Ad p.'+esc(d.page):'See in ad \u00b7 p.'+esc(d.page)}</a>`);
   const s=storeLink(d);a.push(`<a class="site" style="--c:${storeColor(d.chain)}" href="${esc(s.url)}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(short?s.label.replace(/^Find at /,''):s.label)}</a>`);
@@ -574,6 +575,7 @@ function renderShop(){
 function renderData(){
   const w=Object.entries(adWeeks);
   $('#adInfo').innerHTML=w.length?w.map(([ch,v])=>`<b>${esc(ch)}</b>: ${v?`${esc(v.valid_from)} to ${esc(v.valid_to)}${v.extended_page_valid_to?' (some items to '+esc(v.extended_page_valid_to)+')':''}${v.store?'<br><span class=sub>'+esc(v.store)+'</span>':''}<br><span class=sub>${adFile(ch)?'Printed ad linked: every deal shows "See in ad".':'No printed ad file on the site. To get "See in ad" links, add the ad PDF beside this page named <code>'+esc(adSlug(ch))+'</code>.'}</span>`:'no ad loaded'}`).join('<br>'):`${deals.length} rows loaded, no ad dates supplied.`;
+  $('#buildInfo').textContent='App version: '+BUILD+'.';
   {const w=list.filter(i=>!i.adhoc).length,o=list.length-w;$('#listInfo').textContent=`${w} item${w===1?'':'s'} on Compare Deals${o?`, plus ${o} one-off deal${o===1?'':'s'} on this week's Shopping List`:''}.`}
   const src=store.get('dm.dealsSource','built-in seed');
   const now=new Date(),stale=w.filter(([,v])=>v&&new Date(v.valid_to+'T23:59:59')<now).map(([ch,v])=>`${ch} ad expired ${v.valid_to}`);
@@ -581,7 +583,7 @@ function renderData(){
   $('#banner').innerHTML=(stale.length?`<div class="banner">${stale.join(' · ')}. Prices shown are from an old ad — load this week's deals.json on the Data tab. Source: ${esc(src)}.</div>`:'')+roll;
   const md=s=>s?s.slice(5).replace(/^0/,'').replace('-0','-').replace('-','/'):'';const live=w.filter(([,v])=>v);
   const to=live.map(([,v])=>v.valid_to).sort().pop();$('#wk').textContent=live.length?`Ads through ${md(to)} · ${live.length} store${live.length>1?'s':''}`:'';
-  $('#wkDetail').textContent=live.map(([ch,v])=>`${ch} ${md(v.valid_from)}–${md(v.valid_to)}`).join(' · ');
+  $('#wkDetail').textContent=live.map(([ch,v])=>`${ch} ${md(v.valid_from)}–${md(v.valid_to)}`).join(' · ')+' · App version '+BUILD;
 }
 function renderStores(){$('#homeSel').innerHTML=stores().map(s=>`<option${s===home()?' selected':''}>${esc(s)}</option>`).join('');$('#storeToggles').innerHTML=allStores().map(s=>`<label class="btn q" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-store="${esc(s)}" ${stores().includes(s)?'checked':''}>${chip(s)}</label>`).join('')}
 $('#storeToggles').addEventListener('change',e=>{const s=e.target.dataset.store;if(!s) return;const on=allStores().filter(x=>x===s?e.target.checked:stores().includes(x));if(!on.length){e.target.checked=true;return}myStores=on.length===allStores().length?null:on;store.set('dm.stores',myStores);renderAll()});
