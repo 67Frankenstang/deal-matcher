@@ -168,9 +168,9 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
 </section>
 
 <section id="t-deals">
-  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, grouped by store and ad section. Tap <b>Best savings</b> to rank your main store's deals by percent off (only deals where the ad prints a regular price can be ranked). Tap a section to open it, or search by name to see matches from every section at once. Filters narrow by store, section, or deal type (Buy 5 Save $1, digital coupon, BOGO). Tap <b>+ Add to list</b> on anything you want: it goes straight on this week's Shopping List under that store. Tap the button again to take it off.</p>
+  <details class="intro"><summary><b>Weekly Deals — everything in this week's ads</b><span class="hint">tap for help</span></summary><div class="body"><p>Every sale item from every store, grouped by store and ad section. Tap <b>Best savings</b> to rank your main store's deals by percent off (only deals where the ad prints a regular price can be ranked). Tap a section to open it, or search to see matches from every section at once. Search is broad on purpose: <i>turkey</i> finds every deal that mentions turkey, and everyday names work (<i>coke</i> finds Coca-Cola, <i>soda</i> finds soft drinks). Filters narrow by store, section, or deal type (Buy 5 Save $1, digital coupon, BOGO). Tap <b>+ Add to list</b> on anything you want: it goes straight on this week's Shopping List under that store. Tap the button again to take it off.</p>
   <details><summary>How to read a price</summary><p>A black price is printed in the ad. An amber <b>≤</b> price is a ceiling worked out from "save up to" wording — you'll pay that or less. <span class="dc">DC</span> means clip the digital coupon in that store's app first. "No unit price" means the ad only says BOGO or percent-off, so there's nothing to calculate.</p></details></div></details>
-  <div class="filters"><input id="fText" placeholder="Search deals"><button class="btn q" id="fBest" aria-pressed="false">Best savings</button><button class="btn q" id="fToggle">Filters</button></div>
+  <div class="filters"><input id="fText" placeholder="Search: turkey, coke, eggs"><button class="btn q" id="fBest" aria-pressed="false">Best savings</button><button class="btn q" id="fToggle">Filters</button></div>
   <div class="filters" id="fMore" hidden>
     <select id="fStore"><option value="">All stores</option></select>
     <select id="fSection"><option value="">All sections</option></select>
@@ -305,7 +305,7 @@ function tokens(s){return String(s||'').toLowerCase().normalize('NFD').replace(/
 const ALT={hamburger:['ground beef'],mince:['ground beef'],'hot dog':['frank','wiener'],hotdog:['hot dog','frank','wiener'],mayo:['mayonnaise'],ketchup:['catsup'],
   soda:['coca-cola','pepsi','canada dry','soft drink','7up','sprite','dr pepper'],pop:['coca-cola','pepsi','soft drink'],coke:['coca-cola'],bbq:['barbecue'],
   'dish soap':['dishwashing liquid','dish liquid','dish detergent'],'toilet paper':['bath tissue','toilet tissue'],oj:['orange juice'],'lunch meat':['lunchmeat','deli meat'],yogurt:['yoghurt'],
-  'trash bag':['garbage bag','kitchen bag'],'foil':['aluminum foil'],'tissue':['facial tissue']};
+  'trash bag':['garbage bag','kitchen bag'],pb:['peanut butter'],bogo:['buy 1 get 1'],b1g1:['buy 1 get 1'],tp:['bath tissue','toilet tissue'],mac:['macaroni'],'cold cut':['lunchmeat','deli meat'],'pop tart':['pop-tart'],'foil':['aluminum foil'],'tissue':['facial tissue']};
 const ALTS=Object.entries(ALT).map(([k,v])=>[tokens(k),v.map(tokens)]).sort((a,b)=>b[0].length-a[0].length);
 /* product-type rules: a deal containing one of these words is a different product, unless the shopper asked for that word */
 const EXC0={milk:'evaporated condensed chocolate almond oat coconut soy powdered malted shake',butter:'peanut almond cashew apple cocoa shea body cookie cracker bar spray popcorn',
@@ -325,6 +325,18 @@ function dt(d){if(d._t)return d._t;const name=String(d.product_name||'');let hea
   const ht=tokens(head),nouns=new Set(),near=new Set();
   head.split(/\s+or\s+|;/i).forEach(x=>{const w=tokens(x).filter(v=>!/\d/.test(v)&&!CONT.has(v));if(!w.length)return;nouns.add(w[w.length-1]);near.add(w[w.length-1]);if(w.length>1)near.add(w[w.length-2])});
   return d._t={h:wset(ht),hs:' '+ht.join(' ')+' ',a:wset(tokens(name)),full:wset(tokens(name+' '+(d.size||''))),nouns,near}}
+/* Broad search for the two search boxes: every typed word (or one of its other names, e.g. coke = Coca-Cola) must start a word
+   somewhere in the deal. Returns 2 if all of it is in the product name, 1 if only in the size, section or fine print, 0 if not found. */
+function searchHit(d,q,nameOnly){q=String(q||'').trim().toLowerCase();if(!q)return 1;
+  const T=dt(d);if(!T.sA){T.sA=[...wset(tokens(d.product_name+' '+(d.size||'')+' '+(d.restrictions||'')+' '+(d.section||'')+' '+String(d.deal_type||'').replace(/_/g,' ')))];T.sS=new Set(T.sA);T.aA=[...T.a]}
+  /* whole words match exactly (so "eggs" is not Eggo); only the word still being typed may be a beginning ("tur" finds turkey) */
+  const lastRaw=q.split(/\s+/).pop().replace(/['’]/g,'').replace(/[^a-z0-9%&-]/g,''),lastStem=stem(lastRaw);
+  const hit=(set,arr)=>w=>set.has(w)||(w===lastStem&&lastRaw.length>=2&&arr.some(x=>x.startsWith(lastRaw)));
+  const inA=hit(T.a,T.aA),inS=hit(T.sS,T.sA),g=groups(q);
+  if(g.length){if(g.every(alts=>alts.some(a=>a.every(inA))))return 2;if(!nameOnly&&g.every(alts=>alts.some(a=>a.every(inS))))return 1}
+  const ws=(hay)=>{const k=hay.indexOf(q);return k===0||(k>0&&!/[a-z0-9]/.test(hay[k-1]))};
+  const nm=String(d.product_name).toLowerCase();if(q.length>=3&&ws(nm))return 2;
+  return !nameOnly&&q.length>=3&&ws((nm+' '+(d.size||'')+' '+(d.restrictions||'')+' '+(d.section||'')).toLowerCase())?1:0}
 const gcache=new Map();
 function groups(n){if(gcache.has(n))return gcache.get(n);let t=tokens(n);const g=[];
   for(const [k,alts] of ALTS){for(let i=0;i+k.length<=t.length;i++){if(k.every((w,j)=>t[i+j]===w)){g.push([k,...alts]);t.splice(i,k.length);break}}}
@@ -457,7 +469,7 @@ function renderList(){
 const openG=new Set();let dealsFiltered=false,bestOn=false;
 function renderDeals(){
   const fs=$('#fStore').value,fx=$('#fSection').value,fy=$('#fType').value,ft=$('#fText').value.toLowerCase();
-  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.chain+'|'+d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||(d.product_name+' '+d.restrictions).toLowerCase().includes(ft)));
+  const rows=deals.filter(d=>(!fs||d.chain===fs)&&(!fx||d.chain+'|'+d.section===fx)&&(!fy||d.deal_type===fy)&&(!ft||searchHit(d,ft)));
   dealsFiltered=!!(fx||fy||ft);
   if(bestOn){const st=fs||home(),all=rows.filter(d=>d.chain===st),top=all.filter(d=>sv(d)).sort((a,b)=>sv(b).pct-sv(a).pct||sv(b).amt-sv(a).amt||a._i-b._i);
     const onB=new Set();list.forEach(i=>{if(i.buy)Object.entries(picks[i.id]||{}).forEach(([ch,id])=>onB.add(ch+'|'+id))});
@@ -569,10 +581,9 @@ function addPinned(name,deal,adhoc){let n=(name||'').trim()||deal.product_name;c
   else if(!adhoc)delete it.adhoc;
   it.buy=true;(picks[it.id]??={})[deal.chain]=deal.id;prefs[it.id]=deal.chain;saveList();renderList();renderShop();renderData();renderDeals();return it}
 function taRender(){const q=$('#newItem').value.trim(),box=$('#ta');if(q.length<2||!deals.length){box.hidden=true;return}
-  const words=q.toLowerCase().split(/\s+/),last=words[words.length-1],base=words.slice(0,-1).join(' ');
-  const lastS=stem(last),pre=d=>tokens(d.product_name).some(w=>w.startsWith(last)||w.startsWith(lastS));
-  const bt=tokens(base);/* suggestions are deliberately looser than matching: the shopper is choosing by eye */
-  const hits=deals.map(d=>({d,s:pre(d)&&bt.every(w=>dt(d).a.has(w))?2+score({n:q,k:''},d):0})).filter(x=>x.s>=1.2).sort((a,b)=>b.s-a.s||(a.d.computed_unit_price??99)-(b.d.computed_unit_price??99)).slice(0,8);
+  /* suggestions are deliberately broader than matching: the shopper is choosing by eye */
+  const h0=stores().includes(home())?home():'';
+  const hits=deals.map(d=>({d,s:searchHit(d,q,true)})).filter(x=>x.s).sort((a,b)=>(score({n:q,k:''},b.d)>0)-(score({n:q,k:''},a.d)>0)||(b.d.chain===h0)-(a.d.chain===h0)||(a.d.computed_unit_price??99)-(b.d.computed_unit_price??99)).slice(0,12);
   if(!hits.length){box.innerHTML=`<div class="hint">No deal matches "${esc(q)}" this week — press Add to keep it on your list anyway.</div>`;box.hidden=false;return}
   box.innerHTML=hits.map(({d})=>`<button data-ta="${esc(d.id)}">${chip(d.chain)}<span class="nm">${esc(d.product_name)}<br><span class="sub">${esc(d.size||'')}</span></span><span class="pr ${d.price_basis==='save_up_to_ceiling'?'ceil':''}">${d.computed_unit_price==null?'—':(d.price_basis==='save_up_to_ceiling'?'≤ ':'')+money(d.computed_unit_price)+'/'+esc(d.unit)}</span></button>`).join('')+`<div class="hint">Tap a deal to add it with that match pinned, or press Add for plain "${esc(q)}".</div>`;box.hidden=false}
 $('#newItem').addEventListener('input',taRender);
