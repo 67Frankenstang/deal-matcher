@@ -103,10 +103,11 @@ details.grp>.deal{margin:0;border:0;border-top:1px solid var(--line);border-radi
 #fBest.on{background:var(--ink);color:#fff}
 #fText{min-width:80px}
 .lk{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
-.lk a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ink);border-radius:99px;padding:7px 13px;font-size:15px;font-weight:600;color:var(--ink);background:var(--card);text-decoration:none;white-space:nowrap}
-.lk a:hover{background:var(--ink);color:#fff}
+.lk a{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:99px;padding:8px 15px;font-size:15px;font-weight:700;color:#fff;background:var(--ink);text-decoration:none;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.lk a.site{background:var(--c,var(--ink));border-color:var(--c,var(--ink))}
+.lk a:hover,.lk a:focus-visible{filter:brightness(1.25);text-decoration:underline}
 .lk.storelk{margin:-2px 0 10px}
-.lk.sm{gap:5px;margin:6px 0}.lk.sm a{padding:3px 9px;font-size:12px;border-color:rgba(0,0,0,.45);background:rgba(255,255,255,.6)}
+.lk.sm{gap:5px;margin:7px 0}.lk.sm a{padding:4px 10px;font-size:13px;border-width:1px}
 .tag .store{flex-wrap:wrap;row-gap:4px;overflow:visible}
 .tag .store .sv,.tag .store .sim{margin-left:0}
 /* shop tab */
@@ -419,17 +420,17 @@ const adFile=ch=>(adWeeks[ch]&&adWeeks[ch].ad_pdf)||adFiles[ch]||null;
 async function probeAds(){if(!location.protocol.startsWith('http'))return;let found=false;
   await Promise.all(allStores().map(async ch=>{if(adFiles[ch])return;try{const r=await fetch(adSlug(ch),{method:'HEAD',cache:'no-store'});if(r.ok&&/pdf/i.test(r.headers.get('content-type')||'pdf')){adFiles[ch]=adSlug(ch);found=true}}catch{}}));
   if(found){renderList();renderDeals();renderShop();renderData()}}
-const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:()=>({url:'https://www.publix.com/savings/all-deals',label:'Publix deals page'})};
+const STORE_SITE={kroger:q=>({url:'https://www.kroger.com/search?query='+encodeURIComponent(q),label:'Find at Kroger.com'}),publix:q=>({url:'https://www.publix.com/search?searchTerm='+encodeURIComponent(q),label:'Find at Publix.com'})};
 function storeLink(d){const q=String(d.product_name||'').split(',')[0].replace(/\s+/g,' ').trim().slice(0,60),f=STORE_SITE[String(d.chain).toLowerCase()];
   return f?f(q):{url:'https://www.google.com/search?q='+encodeURIComponent(d.chain+' '+q),label:'Search the web'}}
 const STORE_HOME={kroger:['https://www.kroger.com/','Kroger.com'],publix:['https://www.publix.com/savings/all-deals','Publix deals page']};
 function dealLinks(d,short){const f=adFile(d.chain),a=[];
   if(f&&d.page)a.push(`<a href="${esc(f)}#page=${esc(d.page)}" target="_blank" rel="noopener">\ud83d\udcc4 ${short?'Ad p.'+esc(d.page):'See in ad \u00b7 p.'+esc(d.page)}</a>`);
-  const s=storeLink(d);a.push(`<a href="${esc(s.url)}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(short?s.label.replace(/^Find at /,''):s.label)}</a>`);
+  const s=storeLink(d);a.push(`<a class="site" style="--c:${storeColor(d.chain)}" href="${esc(s.url)}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(short?s.label.replace(/^Find at /,''):s.label)}</a>`);
   return `<div class="lk${short?' sm':''}">${a.join('')}</div>`}
 function storeLinks(ch){const f=adFile(ch),h=STORE_HOME[String(ch).toLowerCase()],a=[];
   if(f)a.push(`<a href="${esc(f)}" target="_blank" rel="noopener">\ud83d\udcc4 Open the ${esc(ch)} ad</a>`);
-  if(h)a.push(`<a href="${esc(h[0])}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(h[1])}</a>`);
+  if(h)a.push(`<a class="site" style="--c:${storeColor(ch)}" href="${esc(h[0])}" target="_blank" rel="noopener">\ud83d\udd0e ${esc(h[1])}</a>`);
   return a.length?`<div class="lk storelk">${a.join('')}</div>`:''}
 /* ---------- savings: only where the ad prints a regular (or before-coupon) price to measure against ---------- */
 function sv(d){const r=d&&d.regular_price,c=d&&d.computed_unit_price;if(r==null||c==null||!(r>c))return null;return{pct:Math.round((1-c/r)*100),amt:Math.round((r-c)*100)/100}}
